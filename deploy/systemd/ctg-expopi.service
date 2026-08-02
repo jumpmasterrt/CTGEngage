@@ -1,0 +1,18 @@
+[Unit]
+Description=CTG ExpoPi local application service
+After=local-fs.target
+
+[Service]
+Type=simple
+User=expopi
+Group=expopi
+WorkingDirectory=/opt/ctg-expopi
+ExecStart=/opt/ctg-expopi/bin/ctg-expopi
+Restart=on-failure
+RestartSec=2
+Environment=CTG_EXPOPI_CONTENT=/opt/ctg-expopi/content
+Environment=CTG_EXPOPI_DATA=/var/lib/ctg-expopi
+
+[Install]
+WantedBy=multi-user.target
+

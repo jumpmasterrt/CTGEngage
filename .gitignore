@@ -1,0 +1,29 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Go
+backend/bin/
+backend/coverage.out
+.cache/
+
+# Runtime data
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Local content/media working files
+content/.staging/
+
+# Editors and OS
+.vs/
+.idea/
+*.user
+Thumbs.db
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!.env.example
