@@ -83,7 +83,7 @@ function missionScreen() {
     </div>
     <div class="choice-list" role="group" aria-label="Choose your first move">${choiceButtons}</div>
     <div class="mission-actions">
-      <p class="hint ${showHint ? 'visible' : ''}" role="status">Strong communities start by making room. Try the choice that puts connection first.</p>
+      <p class="hint ${showHint ? 'visible' : ''}" role="status">${showHint ? 'Strong communities start by making room. Try the choice that puts connection first.' : ''}</p>
       <button class="primary-button compact" data-action="confirm" ${selected ? '' : 'disabled'}>Lock it in <span aria-hidden="true">→</span></button>
     </div>
   </section>`, 2);
@@ -108,9 +108,12 @@ function completeScreen() {
   </section>`, 3);
 }
 
-function render() {
+function render(focusTarget: 'heading' | 'choice' = 'heading') {
   app.innerHTML = screen === 'home' ? homeScreen() : screen === 'mission' ? missionScreen() : completeScreen();
-  app.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+  const focusElement = focusTarget === 'choice' && selected
+    ? app.querySelector<HTMLElement>(`[data-choice="${selected}"]`)
+    : app.querySelector<HTMLElement>('h1');
+  focusElement?.focus({ preventScroll: true });
   resetIdleTimer();
 }
 
@@ -125,9 +128,15 @@ app.addEventListener('click', (event) => {
     screen = 'mission';
   } else if (target.dataset.choice) {
     selected = target.dataset.choice; showHint = false;
+    render('choice');
+    return;
   } else if (action === 'confirm' && selected) {
     if (selected === 'welcome') { screen = 'complete'; showHint = false; }
-    else showHint = true;
+    else {
+      showHint = true;
+      render('choice');
+      return;
+    }
   }
   render();
 });
