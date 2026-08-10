@@ -2,7 +2,7 @@
 
 Offline-first touchscreen experience for introducing convention visitors to Combat Tested Gaming.
 
-The application is designed to run on the Raspberry Pi kiosk named `ExpoPi`, while remaining portable to iPad, Android, and Windows kiosk devices.
+The application is designed to run on iPad, Android, Linux and Windows kiosk devices.
 
 ## Stack
 
