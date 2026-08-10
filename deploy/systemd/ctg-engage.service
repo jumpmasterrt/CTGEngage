@@ -1,0 +1,17 @@
+[Unit]
+Description=CTG Engage local application service
+After=local-fs.target
+
+[Service]
+Type=simple
+User=ctg-engage
+Group=ctg-engage
+WorkingDirectory=/opt/ctg-engage
+ExecStart=/opt/ctg-engage/bin/ctg-engage
+Restart=on-failure
+RestartSec=2
+Environment=CTG_ENGAGE_CONTENT=/opt/ctg-engage/content
+Environment=CTG_ENGAGE_DATA=/var/lib/ctg-engage
+
+[Install]
+WantedBy=multi-user.target

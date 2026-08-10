@@ -12,6 +12,6 @@ func main() {
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	log.Println("ExpoPi backend listening on http://127.0.0.1:8080")
+	log.Println("CTG Engage backend listening on http://127.0.0.1:8080")
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", mux))
 }

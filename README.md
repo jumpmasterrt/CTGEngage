@@ -1,6 +1,8 @@
-# CTG ExpoPi
+# CTG Engage
 
-Offline touchscreen convention appliance for Linux-capable single-board computers.
+Offline-first touchscreen experience for introducing convention visitors to Combat Tested Gaming.
+
+The application is designed to run on the Raspberry Pi kiosk named `ExpoPi`, while remaining portable to iPad, Android, and Windows kiosk devices.
 
 ## Stack
 
@@ -32,6 +34,5 @@ In a second terminal:
 
 ```powershell
 cd backend
-go run ./cmd/expopi
+go run ./cmd/engage
 ```
-

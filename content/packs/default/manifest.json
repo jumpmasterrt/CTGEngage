@@ -1,9 +1,8 @@
 {
   "schemaVersion": 1,
   "id": "default",
-  "name": "CTG ExpoPi Default",
+  "name": "CTG Engage Default",
   "department": "CTG",
   "locale": "en-US",
   "startScreen": "attract"
 }
-
