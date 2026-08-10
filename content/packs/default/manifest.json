@@ -4,5 +4,7 @@
   "name": "CTG Engage Default",
   "department": "CTG",
   "locale": "en-US",
-  "startScreen": "attract"
+  "startScreen": "attract",
+  "experience": "experience.json",
+  "brandingDirectory": "branding"
 }

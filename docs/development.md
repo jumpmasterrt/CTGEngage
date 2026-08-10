@@ -16,4 +16,10 @@ The kiosk uses web files rather than WPF/XAML:
 - `frontend/src/main.ts` defines the screens and interactions.
 - `frontend/src/style.css` defines the visual design and responsive layout.
 
+## Edit the default experience
+
+Visitor-facing copy, the mission choices, the correct answer, the idle timeout, and branding paths live in `content/packs/default/experience.json`. Branding files live beside it in `content/packs/default/branding`.
+
+The frontend validates the content pack before using it. A pack must contain two to six uniquely named choices and exactly one correct answer. If the pack is missing or invalid, CTG Engage uses its built-in fallback experience so the kiosk remains usable.
+
 Visual Studio Community can remain installed for general Windows development, but VS Code is the primary editor for this Go and vanilla TypeScript workspace.

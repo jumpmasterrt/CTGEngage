@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "first-contact",
+  "idleTimeoutSeconds": 120,
+  "brand": {
+    "organization": "Combat Tested Gaming",
+    "product": "CTG Engage",
+    "tagline": "Our Community — Deployed.",
+    "offlineStatus": "Offline experience ready"
+  },
+  "assets": {
+    "brandLogo": "/branding/Transparent%20CTG%20Tag%20Only.png",
+    "qrCode": "/branding/CTG%20QR.png"
+  },
+  "home": {
+    "eyebrow": "Welcome to the community",
+    "headline": "Better connections",
+    "highlightedHeadline": "start with hello.",
+    "lede": "Take a one-minute mission and discover how a simple first move can turn a room full of strangers into a squad.",
+    "cta": "Begin your mission",
+    "touchNote": "Tap the button to begin",
+    "missionLabel": "Today’s mission",
+    "missionTitle": "Make the first move.",
+    "missionMeta": "01 minute · all skill levels"
+  },
+  "mission": {
+    "number": "01",
+    "label": "First contact",
+    "title": "A new player walks up alone.",
+    "prompt": "They’re interested—but they don’t know anyone yet. What’s your first move?",
+    "choiceAriaLabel": "Choose your first move",
+    "confirmLabel": "Lock it in",
+    "retryHint": "Strong communities start by making room. Try the choice that puts connection first.",
+    "choices": [
+      {
+        "id": "spectate",
+        "label": "Let them watch first",
+        "detail": "Give them time to learn the group from the sidelines.",
+        "correct": false
+      },
+      {
+        "id": "welcome",
+        "label": "Make the first introduction",
+        "detail": "Invite them in, learn their name, and find a game you share.",
+        "correct": true
+      },
+      {
+        "id": "rules",
+        "label": "Start with the rules",
+        "detail": "Explain how the community works before getting acquainted.",
+        "correct": false
+      }
+    ]
+  },
+  "completion": {
+    "eyebrow": "Mission complete",
+    "title": "That’s how community starts.",
+    "lede": "You didn’t start with a pitch or a rulebook. You started with a person.",
+    "promotionalLine": "Creating better first conversations.",
+    "aboutKicker": "About CTG",
+    "aboutTitle": "Gaming with purpose. Community for life.",
+    "aboutBody": "Combat Tested Gaming brings veterans and allies together through gaming, shared experiences, and genuine connection.",
+    "ctaKicker": "Your next move",
+    "ctaText": "Scan to connect with CTG.",
+    "qrAlt": "QR code to connect with Combat Tested Gaming",
+    "restartLabel": "Run it again"
+  }
+}

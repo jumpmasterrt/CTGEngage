@@ -5,7 +5,7 @@
       "label": "Start CTG Engage",
       "type": "process",
       "command": "npm.cmd",
-      "args": ["run", "dev", "--", "--host", "127.0.0.1"],
+      "args": ["run", "dev", "--", "--host", "127.0.0.1", "--port", "5175", "--strictPort"],
       "options": {
         "cwd": "${workspaceFolder}/frontend"
       },
