@@ -35,7 +35,7 @@ function shell(content: string, step: number) {
   return `<main class="kiosk-shell">
     <header class="brand-bar">
       <button class="wordmark" data-action="home" aria-label="Return to the CTG Engage home screen">
-        <span class="brand-mark" aria-hidden="true"><span>C</span><span>T</span><span>G</span></span>
+        <img class="brand-logo" src="/branding/Transparent%20CTG%20Tag%20Only.png" alt="" aria-hidden="true">
         <span class="brand-name">CTG <strong>ENGAGE</strong></span>
       </button>
       <p class="tagline">Our Community <span aria-hidden="true">—</span> Deployed.</p>
@@ -102,7 +102,10 @@ function completeScreen() {
       <p class="card-kicker">About CTG</p>
       <h2>Gaming with purpose.<br>Community for life.</h2>
       <p>Combat Tested Gaming brings veterans and allies together through gaming, shared experiences, and genuine connection.</p>
-      <div class="cta-row"><div><span>Your next move</span><strong>Meet the CTG team today.</strong></div><span class="cta-arrow" aria-hidden="true">→</span></div>
+      <div class="cta-row">
+        <div><span>Your next move</span><strong>Scan to connect with CTG.</strong></div>
+        <img class="cta-qr" src="/branding/CTG%20QR.png" alt="QR code to connect with Combat Tested Gaming">
+      </div>
     </aside>
     <button class="secondary-button" data-action="restart">Run it again</button>
   </section>`, 3);

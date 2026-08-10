@@ -31,9 +31,7 @@ button:focus-visible { outline: 3px solid #f2b84b; outline-offset: 4px; }
 }
 .brand-bar, footer, .progress { display: flex; align-items: center; justify-content: space-between; }
 .wordmark { display: flex; align-items: center; gap: .8rem; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
-.brand-mark { display: grid; grid-template-columns: repeat(3,1fr); width: 3.1rem; transform: skew(-8deg); }
-.brand-mark span { display: grid; height: 2rem; place-items: center; border: 1px solid #8bac74; color: #d9e6d0; font-size: .78rem; font-weight: 900; }
-.brand-mark span + span { border-left: 0; }
+.brand-logo { width: 2.8rem; height: 2.8rem; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
 .brand-name { font-size: clamp(1rem,2vw,1.35rem); font-weight: 300; letter-spacing: .12em; }
 .brand-name strong { color: #a9c98f; font-weight: 800; }
 .tagline { margin: 0; color: #b7c1b8; font-family: Georgia,serif; font-style: italic; }
@@ -103,7 +101,7 @@ h1 em { color: #a9c98f; font-weight: 400; }
 .cta-row span, .cta-row strong { display: block; }
 .cta-row div > span { color: #819489; font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; }
 .cta-row strong { margin-top: .35rem; }
-.cta-arrow { color: #efb54a; font-size: 2rem; }
+.cta-qr { width: 5.25rem; height: 5.25rem; padding: .22rem; background: #fff; object-fit: contain; }
 .secondary-button { grid-column: 2; justify-self: start; min-height: 3rem; padding: 0; border-bottom: 1px solid #829d70; color: #b9cbbd; background: transparent; }
 footer { padding-top: 1rem; border-top: 1px solid rgba(129,154,137,.25); color: #6f8177; font-size: .65rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .status { display: flex; align-items: center; gap: .5rem; }
