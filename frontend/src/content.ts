@@ -1,5 +1,5 @@
 export interface ExperienceContent {
-  schemaVersion: 1;
+  schemaVersion: 4;
   id: string;
   idleTimeoutSeconds: number;
   brand: {
@@ -17,7 +17,11 @@ export interface ExperienceContent {
     headline: string;
     highlightedHeadline: string;
     lede: string;
-    cta: string;
+    questionAriaLabel: string;
+    yesLabel: string;
+    yesDetail: string;
+    noLabel: string;
+    noDetail: string;
     touchNote: string;
     missionLabel: string;
     missionTitle: string;
@@ -26,36 +30,96 @@ export interface ExperienceContent {
   mission: {
     number: string;
     label: string;
-    title: string;
-    prompt: string;
-    choiceAriaLabel: string;
-    confirmLabel: string;
-    retryHint: string;
+    yesTitle: string;
+    noTitle: string;
+    yesPrompt: string;
+    noPrompt: string;
+    yesChoiceAriaLabel: string;
+    noChoiceAriaLabel: string;
+    yesConfirmLabel: string;
+    noConfirmLabel: string;
+    noStillConfirmLabel: string;
+    multiSelectNote: string;
     choices: Array<{
       id: string;
+      branch: 'yes' | 'no';
       label: string;
       detail: string;
-      correct: boolean;
+      outcomeTitle: string;
+      outcomeBody: string;
     }>;
   };
   completion: {
     eyebrow: string;
-    title: string;
-    lede: string;
+    fallbackTitle: string;
+    fallbackBody: string;
+    multiTitle: string;
+    multiBody: string;
+    selectionPrefix: string;
     promotionalLine: string;
-    aboutKicker: string;
-    aboutTitle: string;
-    aboutBody: string;
-    ctaKicker: string;
-    ctaText: string;
+    realizationKicker: string;
+    realizationTitle: string;
+    realizationBody: string;
+    nonGamerKicker: string;
+    nonGamerTitle: string;
+    nonGamerBody: string;
+    nonGamerPromotionalLine: string;
+    discoverLabel: string;
+    restartLabel: string;
+  };
+  discovery: {
+    eyebrow: string;
+    title: string;
+    prompt: string;
+    choiceAriaLabel: string;
+    exploreLabel: string;
+    allTopicsLabel: string;
+    moreInTopicLabel: string;
+    surpriseAgainLabel: string;
+    connectKicker: string;
+    connectText: string;
     qrAlt: string;
     restartLabel: string;
+    items: Array<{
+      id: string;
+      label: string;
+      summary: string;
+      kicker: string;
+      title: string;
+      lead: string;
+      factKicker: string;
+      factTitle: string;
+      factBody: string;
+      humanKicker: string;
+      humanTitle: string;
+      humanBody: string;
+      sourceLabel: string;
+      chapterTitle?: string;
+      chapterPrompt?: string;
+      chapterAriaLabel?: string;
+      randomizeChapters?: boolean;
+      chapters?: Array<{
+        id: string;
+        label: string;
+        summary: string;
+        kicker: string;
+        title: string;
+        lead: string;
+        factKicker: string;
+        factTitle: string;
+        factBody: string;
+        humanKicker: string;
+        humanTitle: string;
+        humanBody: string;
+        sourceLabel: string;
+      }>;
+    }>;
   };
 }
 
 const fallbackExperience: ExperienceContent = {
-  schemaVersion: 1,
-  id: 'first-contact-fallback',
+  schemaVersion: 4,
+  id: 'connection-discovery-fallback',
   idleTimeoutSeconds: 120,
   brand: {
     organization: 'Combat Tested Gaming',
@@ -68,42 +132,525 @@ const fallbackExperience: ExperienceContent = {
     qrCode: '/branding/CTG%20QR.png',
   },
   home: {
-    eyebrow: 'Welcome to the community',
-    headline: 'Better connections',
-    highlightedHeadline: 'start with hello.',
-    lede: 'Take a one-minute mission and discover how a simple first move can turn a room full of strangers into a squad.',
-    cta: 'Begin your mission',
-    touchNote: 'Tap the button to begin',
-    missionLabel: 'Today’s mission',
-    missionTitle: 'Make the first move.',
-    missionMeta: '01 minute · all skill levels',
+    eyebrow: 'One honest question',
+    headline: 'Are you',
+    highlightedHeadline: 'a gamer?',
+    lede: 'Most people answer too quickly. Pick the answer that feels true right now—there is no wrong one.',
+    questionAriaLabel: 'Are you a gamer?',
+    yesLabel: 'Yes',
+    yesDetail: 'I already know what I play.',
+    noLabel: 'No',
+    noDetail: 'That label does not feel like me.',
+    touchNote: 'Tap the answer that feels true right now',
+    missionLabel: 'The real question',
+    missionTitle: 'What can we do once we’re together?',
+    missionMeta: 'No score · no wrong answer',
   },
   mission: {
     number: '01',
-    label: 'First contact',
-    title: 'A new player walks up alone.',
-    prompt: 'They’re interested—but they don’t know anyone yet. What’s your first move?',
-    choiceAriaLabel: 'Choose your first move',
-    confirmLabel: 'Lock it in',
-    retryHint: 'Strong communities start by making room. Try the choice that puts connection first.',
+    label: 'Find your doorway',
+    yesTitle: 'What kind of gamer are you?',
+    noTitle: 'Are you sure?',
+    yesPrompt: 'Pick every part of gaming that sounds like you.',
+    noPrompt: 'You don’t play horseshoes, cornhole, Life, Monopoly, Spades, Euchre, dominoes, billiards, hacky sack, darts, or anything like them?',
+    yesChoiceAriaLabel: 'Choose every kind of gaming that sounds like you',
+    noChoiceAriaLabel: 'Choose any familiar game',
+    yesConfirmLabel: 'Show me where I fit',
+    noConfirmLabel: 'So that counts?',
+    noStillConfirmLabel: 'Show me what CTG means',
+    multiSelectNote: 'Choose as many as you like.',
     choices: [
-      { id: 'spectate', label: 'Let them watch first', detail: 'Give them time to learn the group from the sidelines.', correct: false },
-      { id: 'welcome', label: 'Make the first introduction', detail: 'Invite them in, learn their name, and find a game you share.', correct: true },
-      { id: 'rules', label: 'Start with the rules', detail: 'Explain how the community works before getting acquainted.', correct: false },
+      { id: 'video', branch: 'yes', label: 'Video games', detail: 'Casual or competitive, from shooters and MMOs to co-op nights.', outcomeTitle: 'You already speak the language.', outcomeBody: 'CTG has room for casual and competitive video-game players. The game gets people through the door; the squad is what keeps them connected.' },
+      { id: 'tabletop', branch: 'yes', label: 'Tabletop & miniatures', detail: 'Cards, campaigns, dice, painting, and gathering around a table.', outcomeTitle: 'The table counts.', outcomeBody: 'CTG reaches beyond the screen through tabletop games, Post gaming nights, and in-person events. Connection does not require a controller.' },
+      { id: 'racing', branch: 'yes', label: 'Racing & sports', detail: 'Sim rigs, sports games, leagues, and a little friendly rivalry.', outcomeTitle: 'Competition has more than one shape.', outcomeBody: 'CTG has grown beyond its first esports leagues into racing, sports games, tournaments, and many ways to compete together.' },
+      { id: 'creator', branch: 'yes', label: 'Streaming & storytelling', detail: 'Sharing a match, hosting a conversation, or telling a veteran story.', outcomeTitle: 'You can contribute without joining a bracket.', outcomeBody: 'Streaming, podcasts, interviews, and veteran storytelling are part of CTG too. Creating a place for others to connect is its own role.' },
+      { id: 'people', branch: 'yes', label: 'Mostly here for the people', detail: 'Conversation, camaraderie, mentoring, or simply hanging out.', outcomeTitle: 'Community is a valid play style.', outcomeBody: 'Some people come to find a squad. Others stay for conversation, mentorship, events, and practical help. Showing up counts.' },
+      { id: 'yard', branch: 'no', label: 'Horseshoes, cornhole, or hacky sack', detail: 'A little skill, a few rules, and people choosing to play together.', outcomeTitle: 'You’re a gamer.', outcomeBody: 'Horseshoes, cornhole, and hacky sack all use skill, rules, and shared play. Gaming does not mean only video games.' },
+      { id: 'board', branch: 'no', label: 'Life, Monopoly, or another board game', detail: 'A board, a goal, and maybe some friendly competition.', outcomeTitle: 'You’re a gamer.', outcomeBody: 'Board games turn rules and imagination into a shared experience. Gaming does not mean only video games.' },
+      { id: 'cards', branch: 'no', label: 'Spades, Euchre, or another card game', detail: 'Partners, strategy, table talk, and the next hand.', outcomeTitle: 'You’re a gamer.', outcomeBody: 'Card games create teamwork, rivalry, stories, and reasons to gather. Gaming does not mean only video games.' },
+      { id: 'rec', branch: 'no', label: 'Dominoes, billiards, or darts', detail: 'Games people have used to connect for generations.', outcomeTitle: 'You’re a gamer.', outcomeBody: 'Dominoes, billiards, and darts are games people gather around. The medium changes; the connection is the point.' },
+      { id: 'still-no', branch: 'no', label: 'Nope, still none of those', detail: 'The gamer label still does not fit—and that is okay.', outcomeTitle: 'You don’t need the label.', outcomeBody: 'Fair enough. CTG can still be a digital front door into the VFW—for advocacy, benefits, connection, and community without requiring a local Post.' },
     ],
   },
   completion: {
-    eyebrow: 'Mission complete',
-    title: 'That’s how community starts.',
-    lede: 'You didn’t start with a pitch or a rulebook. You started with a person.',
-    promotionalLine: 'Creating better first conversations.',
-    aboutKicker: 'About CTG',
-    aboutTitle: 'Gaming with purpose. Community for life.',
-    aboutBody: 'Combat Tested Gaming brings veterans and allies together through gaming, shared experiences, and genuine connection.',
-    ctaKicker: 'Your next move',
-    ctaText: 'Scan to connect with CTG.',
-    qrAlt: 'QR code to connect with Combat Tested Gaming',
+    eyebrow: 'You found an entry point',
+    fallbackTitle: 'There is room for you here.',
+    fallbackBody: 'CTG starts with a shared interest and makes space for real connection.',
+    multiTitle: 'You have more than one way in.',
+    multiBody: 'CTG is built for that kind of overlap. Every interest can become a different doorway into the same community.',
+    selectionPrefix: 'Your mix',
+    promotionalLine: 'Gaming is the medium we’re building connection on.',
+    realizationKicker: 'The lightbulb',
+    realizationTitle: 'Gaming does not mean only video games.',
+    realizationBody: 'A game can be digital, physical, competitive, cooperative, serious, or silly. It gives people a shared reason to show up—and connection has somewhere to begin.',
+    nonGamerKicker: 'A different kind of front door',
+    nonGamerTitle: 'You can belong here without playing a game.',
+    nonGamerBody: 'Not every CTG member plays. Some follow VFW legislative priorities, some want connection without relying on a local Post, and some simply want a veteran community that meets them online. The VFW Foundation places CTG under Digital Engagement and calls it its premier digital entry point for technology, gaming, hardware, and digital-native supporters.',
+    nonGamerPromotionalLine: 'For some people, the game is the doorway. For others, the community is.',
+    discoverLabel: 'See what gaming can build',
     restartLabel: 'Run it again',
+  },
+  discovery: {
+    eyebrow: 'Go deeper',
+    title: 'What can we do once we’re together?',
+    prompt: 'Choose a path and discover what grew from a shared reason to play.',
+    choiceAriaLabel: 'Choose what to discover about Combat Tested Gaming',
+    exploreLabel: 'Explore another',
+    allTopicsLabel: 'Back to all topics',
+    moreInTopicLabel: 'More in this topic',
+    surpriseAgainLabel: 'Surprise me again',
+    connectKicker: 'Connect with CTG',
+    connectText: 'Scan to find your way in.',
+    qrAlt: 'QR code to connect with Combat Tested Gaming',
+    restartLabel: 'Start over',
+    items: [
+      {
+        id: 'people',
+        label: 'Find your people',
+        summary: 'From a favorite game to a community of thousands.',
+        kicker: 'Find your people',
+        title: 'There is more than one way to play.',
+        lead: 'CTG is not one league, one platform, or one kind of gamer.',
+        factKicker: 'Current reality',
+        factTitle: '3,408 members—and room for more.',
+        factBody: 'CTG’s Discord reached 3,408 members on August 17, 2026, with interests spanning casual and competitive video games, racing, tabletop, streaming, and real-world events.',
+        humanKicker: 'Why it matters',
+        humanTitle: 'The game removes the awkward first step.',
+        humanBody: 'A shared activity gives strangers something to do together before anyone has to explain themselves. The first conversation can begin with a match, a table, or a simple invitation to join in.',
+        sourceLabel: 'Current member count confirmed August 17, 2026.',
+        chapterTitle: 'What kind of first connection feels easiest?',
+        chapterPrompt: 'You do not need to make a big entrance. Choose the smallest first step that sounds comfortable.',
+        chapterAriaLabel: 'Explore ways to find people and connect through Combat Tested Gaming',
+        chapters: [
+          {
+            id: 'familiar-doorway',
+            label: 'Start with what you know',
+            summary: 'One familiar game, hobby, or shared interest is enough.',
+            kicker: 'Start with what you know',
+            title: 'You do not need to understand the whole community to enter it.',
+            lead: 'Finding one familiar interest can make a community of thousands feel human-sized.',
+            factKicker: 'A lot of possible doorways',
+            factTitle: '3,408 members means there is a good chance somebody speaks your language.',
+            factBody: 'CTG reached 3,408 Discord members on August 17, 2026. Interests across the community include casual and competitive video games, tabletop play, racing, streaming, conversation, and real-world events.',
+            humanKicker: 'Why familiar helps',
+            humanTitle: 'The first conversation already has a subject.',
+            humanBody: 'You can begin with a game you know, a team you follow, a hobby you miss, or a question about something new. Nobody has to manufacture small talk when there is already something to do together.',
+            sourceLabel: 'Member count confirmed by CTG leadership on August 17, 2026; interest breadth reflected in VFW public reporting.',
+          },
+          {
+            id: 'skip-scoreboard',
+            label: 'Skip the scoreboard',
+            summary: 'Conversation and camaraderie count even when nobody is competing.',
+            kicker: 'Skip the scoreboard',
+            title: 'Not every squad needs a standings table.',
+            lead: 'Some people want teammates. Others simply want people who understand the language and the life.',
+            factKicker: 'How members use the space',
+            factTitle: 'For many people, CTG is a connection platform first.',
+            factBody: 'In 2025, a CTG podcast host told VFW Checkpoint that most patrons used the community to meet and socialize with other veterans. The podcast itself grew from the everyday ‘Coffee & Afternoon Nap’ Discord conversation.',
+            humanKicker: 'Permission to just be there',
+            humanTitle: 'You can join the conversation without proving anything.',
+            humanBody: 'Listening, talking, sharing a joke, watching someone else play, or becoming a familiar name can be enough. Competition is one way to connect—not the admission price.',
+            sourceLabel: 'Community-use description reported by VFW Checkpoint in November 2025.',
+          },
+          {
+            id: 'across-generations',
+            label: 'Meet across generations',
+            summary: 'A shared interest can bridge age, rank, branch, and service era.',
+            kicker: 'Meet across generations',
+            title: 'A shared table can be wider than a shared era.',
+            lead: 'People do not need matching résumés to recognize something in one another.',
+            factKicker: 'A broad community',
+            factTitle: 'CTG has connected veterans across decades of life experience.',
+            factBody: 'VFW reporting in 2025 described CTG veterans ranging in age from 21 to 79, with VFW and Auxiliary members joining the Discord community from across the country.',
+            humanKicker: 'What the shared interest does',
+            humanTitle: 'The game lets age and service era arrive second.',
+            humanBody: 'People can first meet as partners, opponents, teachers, learners, or fans. The rest of their story appears naturally—and differences that might have separated them can become something worth hearing about.',
+            sourceLabel: 'Age range and national participation reported by VFW Checkpoint in November 2025.',
+          },
+          {
+            id: 'beyond-discord',
+            label: 'Take it beyond Discord',
+            summary: 'Digital connection can stay online or grow into a real-world gathering.',
+            kicker: 'Beyond Discord',
+            title: 'An online connection is real before it ever becomes a handshake.',
+            lead: 'Some friendships will stay digital. Others may travel into a game night, convention, or local Post when that feels right.',
+            factKicker: 'Room to travel',
+            factTitle: 'VFW describes CTG as a community that works online and offline.',
+            factBody: 'VFW reporting has documented recurring online activity and in-person gaming models. In 2025, CTG’s founder described the gaming suite at VFW Post 2205 in Texas as a model for what Combat Tested Gaming is trying to accomplish.',
+            humanKicker: 'No forced destination',
+            humanTitle: 'The goal is connection—not getting everyone into the same building.',
+            humanBody: 'A digital community is a valid home of its own. When people want more, the relationships built there can also make an in-person gathering feel less like walking into a room of strangers.',
+            sourceLabel: 'Online-and-offline participation and the Post 2205 model reported by VFW in 2025.',
+          },
+        ],
+      },
+      {
+        id: 'support',
+        label: 'Get real support',
+        summary: 'Benefits help can live inside the community.',
+        kicker: 'Get real support',
+        title: 'Help can meet people where they already are.',
+        lead: 'Someone can arrive looking for a squad and discover a trusted path to practical support.',
+        factKicker: 'Verified fact',
+        factTitle: 'VA-benefits help exists inside CTG.',
+        factBody: 'A VFW Accredited Service Officer answers benefits questions inside the Discord, and VA has hosted a live health-care and benefits Q&A with the CTG community.',
+        humanKicker: 'Why it matters',
+        humanTitle: 'Support does not need to begin with an appointment.',
+        humanBody: 'Trust often forms before someone is ready to ask for help. Putting knowledgeable people inside a familiar community makes the next step easier to see and easier to take.',
+        sourceLabel: 'Verified by VA News and VFW public reporting.',
+        chapterTitle: 'Support can begin in more than one way.',
+        chapterPrompt: 'Pick the path that feels most useful. Each one starts inside the community and points toward a practical next step.',
+        chapterAriaLabel: 'Explore ways Combat Tested Gaming connects people with support',
+        chapters: [
+          {
+            id: 'service-officer',
+            label: 'Ask a Service Officer',
+            summary: 'Benefits guidance inside the same community where people gather.',
+            kicker: 'Benefits help inside Discord',
+            title: 'The right person can be closer than you think.',
+            lead: 'A benefits question does not have to begin with searching alone or guessing which office to call.',
+            factKicker: 'Documented access',
+            factTitle: 'CTG has brought accredited benefits help into Discord.',
+            factBody: 'VA News documented a dedicated CTG channel where a VFW Accredited Service Officer answered VA-benefits questions in real time and provided direct help to people trying to access their benefits.',
+            humanKicker: 'Why the location matters',
+            humanTitle: 'Familiar surroundings can lower the first barrier.',
+            humanBody: 'Someone who arrived to talk, watch, or play can see that qualified help exists before they are ready to ask. When the moment comes, the next step is already visible.',
+            sourceLabel: 'Service Officer access documented by VA News in April 2024.',
+          },
+          {
+            id: 'va-qa',
+            label: 'Bring VA to the community',
+            summary: 'Health-care and benefits questions answered where members already meet.',
+            kicker: 'VA meets the community',
+            title: 'Outreach works better when it goes where people are.',
+            lead: 'CTG can serve as a meeting place between veterans and the systems built to support them.',
+            factKicker: 'A real example',
+            factTitle: 'VA and CTG hosted a live health-care and benefits Q&A.',
+            factBody: 'On April 11, 2024, VA and Combat Tested Gaming held a live Discord session where community members could ask questions about VA health care and benefits.',
+            humanKicker: 'What changes',
+            humanTitle: 'Information becomes a conversation.',
+            humanBody: 'A live question can turn a vague concern into a clear next action. It also lets people learn by listening before they decide whether to speak up themselves.',
+            sourceLabel: 'Event details published by VA News in April 2024.',
+          },
+          {
+            id: 'trust-first',
+            label: 'Build trust first',
+            summary: 'Connection can come before the request for help.',
+            kicker: 'Trust before the ask',
+            title: 'People often need a relationship before they need a resource list.',
+            lead: 'Support is easier to approach when it comes through people who already know your name.',
+            factKicker: 'How CTG is designed',
+            factTitle: 'Shared interests build camaraderie and a community of support.',
+            factBody: 'The VFW describes CTG as a supportive, inclusive environment where shared interests build real camaraderie and purpose, with opportunities to learn about veteran benefits alongside play and conversation.',
+            humanKicker: 'The quiet work',
+            humanTitle: 'Belonging makes the next question easier to ask.',
+            humanBody: 'A game night, voice chat, or familiar name in the room can build enough trust for someone to say, ‘I could use some help with this.’ That moment may be small, but it matters.',
+            sourceLabel: 'Current program description from the VFW Combat Tested Gaming page.',
+          },
+          {
+            id: 'connection-support',
+            label: 'Let connection count',
+            summary: 'Camaraderie and emotional support are meaningful—even before formal help begins.',
+            kicker: 'Connection is part of support',
+            title: 'Sometimes the first need is simply not being alone.',
+            lead: 'CTG creates a place to be known, heard, and invited back.',
+            factKicker: 'The stated mission',
+            factTitle: 'VFW describes CTG as a space for camaraderie, emotional support, and mental well-being.',
+            factBody: 'CTG’s current VFW program page emphasizes friendly competition, social engagement, emotional support, and shared purpose—not only wins, rankings, or league play.',
+            humanKicker: 'An important boundary',
+            humanTitle: 'Community support complements professional care; it does not replace it.',
+            humanBody: 'CTG is not a crisis line or a treatment program. It can still give someone relationships, encouragement, and a trusted path toward qualified help when more support is needed.',
+            sourceLabel: 'Current mission language from the VFW Combat Tested Gaming page.',
+          },
+        ],
+      },
+      {
+        id: 'create',
+        label: 'Create something',
+        summary: 'Play can lead to stories, events, and opportunities to contribute.',
+        kicker: 'Create something',
+        title: 'You do not have to join a bracket to matter.',
+        lead: 'A healthy community gives people more than one way to participate.',
+        factKicker: 'What grew',
+        factTitle: 'CTG reaches beyond competition.',
+        factBody: 'The community has expanded into streaming, podcasts, veteran storytelling, mentoring, tabletop play, local gaming nights, and in-person events at VFW Posts and conventions.',
+        humanKicker: 'Why it matters',
+        humanTitle: 'Contribution turns attendance into ownership.',
+        humanBody: 'Hosting a conversation, teaching a game, telling a story, helping at an event, or welcoming one new person can give somebody a role—and give the community another reason to last.',
+        sourceLabel: 'Drawn from VFW, VA, and CTG public records.',
+        chapterTitle: 'What would you help create?',
+        chapterPrompt: 'Not every contribution happens on camera. Choose the kind of role that sounds most like you.',
+        chapterAriaLabel: 'Explore ways to create and contribute in Combat Tested Gaming',
+        chapters: [
+          {
+            id: 'take-the-mic',
+            label: 'Take the mic',
+            summary: 'Turn a conversation, interview, or match into something others can join.',
+            kicker: 'Take the mic',
+            title: 'A controller is not the only tool you can pick up.',
+            lead: 'Streaming and podcasting can turn one veteran conversation into an open invitation for many more.',
+            factKicker: 'Created from within',
+            factTitle: 'VFW members pitched and host CTG’s podcast.',
+            factBody: 'Rob Caudill and Tim Stoker proposed ‘Waking Up with The VFW’s Combat Tested Gaming’ as a way to carry the community’s everyday Discord conversation onto a broader platform. It launched on September 29, 2025, and was distributed across major podcast platforms.',
+            humanKicker: 'What a host really creates',
+            humanTitle: 'A microphone can become an empty chair at the table.',
+            humanBody: 'A good host does more than broadcast. They invite people in, ask the next question, make room for another voice, and help a distant listener feel part of the conversation.',
+            sourceLabel: 'Podcast origin and launch details reported by VFW Checkpoint in November 2025.',
+          },
+          {
+            id: 'tell-the-story',
+            label: 'Tell the whole story',
+            summary: 'Veteran life includes games, advocacy, mental health, family, and everything between.',
+            kicker: 'Tell the whole story',
+            title: 'Veteran life is bigger than a highlight reel.',
+            lead: 'CTG’s stories do not stop when the match ends.',
+            factKicker: 'More than game coverage',
+            factTitle: 'The conversation includes the issues veterans actually live with.',
+            factBody: 'VFW reporting says the CTG podcast covers mental health, VFW partnerships, Auxiliary involvement, legislative priorities, and life in general alongside conversations about gaming and community.',
+            humanKicker: 'Why stories belong here',
+            humanTitle: 'One honest story can give someone else words for their own experience.',
+            humanBody: 'A veteran does not need a polished résumé or a dramatic ending to have something worth sharing. Ordinary stories can teach, warn, encourage, preserve memory, or simply tell another person they are not alone.',
+            sourceLabel: 'Podcast scope reported by VFW Checkpoint in November 2025.',
+          },
+          {
+            id: 'build-the-room',
+            label: 'Build the room',
+            summary: 'Welcome people, guide conversation, and protect the culture around them.',
+            kicker: 'Build the room',
+            title: 'A strong community does not happen by accident.',
+            lead: 'The people behind the scenes decide whether a newcomer feels ignored, tested, or genuinely welcomed.',
+            factKicker: 'Veteran-led spaces',
+            factTitle: 'CTG’s public-facing community team comes from inside the veteran community.',
+            factBody: 'The VFW Foundation says every CTG streamer, podcaster, and moderator is a veteran. The people guiding the conversation bring lived military experience into the room with them.',
+            humanKicker: 'The work people remember',
+            humanTitle: 'Sometimes the most important contribution is noticing who has not spoken yet.',
+            humanBody: 'Moderating, mentoring, answering a question, making an introduction, or inviting one person back can shape the culture more than any scoreboard. Welcoming is a real role.',
+            sourceLabel: 'Community-team composition from the VFW Foundation; mentoring and welcoming roles confirmed by CTG leadership.',
+          },
+          {
+            id: 'host-the-gathering',
+            label: 'Host the gathering',
+            summary: 'Create the recurring reason people show up online or in person.',
+            kicker: 'Host the gathering',
+            title: 'Community needs something to come back to.',
+            lead: 'An organizer turns ‘we should do this sometime’ into a date, a place, and an open invitation.',
+            factKicker: 'What participation can look like',
+            factTitle: 'CTG has combined leagues with game nights, expert Q&As, streams, and in-person models.',
+            factBody: 'VFW reporting has documented weekly game nights, league play, giveaways, subject-matter Q&As, and games ranging from tabletop to military simulators. In 2025, CTG’s founder called a Texas VFW Post gaming suite a model for what the program is trying to accomplish.',
+            humanKicker: 'Why organizers matter',
+            humanTitle: 'The event is temporary. The invitation can last.',
+            humanBody: 'A tournament, card night, watch party, coffee chat, or beginner session gives people a reason to meet. When it is welcoming and repeatable, those meetings can become relationships.',
+            sourceLabel: 'Participation examples and the Post 2205 model reported by VFW in 2025.',
+          },
+        ],
+      },
+      {
+        id: 'surprise',
+        label: 'Surprise me',
+        summary: 'A different unexpected CTG story every time.',
+        kicker: 'The fact that changes everything',
+        title: 'A squad can become a lifeline.',
+        lead: 'The strongest CTG outcome is not a tournament result or a membership number.',
+        factKicker: 'Reported impact',
+        factTitle: 'Seven veterans credited this community with saving their lives.',
+        factBody: 'By the 2025 VFW National Convention, seven veterans had come forward to say that connections made through Combat Tested Gaming helped save their lives.',
+        humanKicker: 'What that really means',
+        humanTitle: 'The relationships are the intervention.',
+        humanBody: 'The claim is not that a particular game saved someone. It is that shared play created relationships—and those relationships gave people somewhere to turn when it mattered most.',
+        sourceLabel: 'Reported by VFW Magazine in 2025.',
+        chapterTitle: 'The unexpected side of CTG.',
+        chapterPrompt: 'Each reveal comes from a shuffled deck of CTG facts and human stories.',
+        chapterAriaLabel: 'Unexpected facts and stories about Combat Tested Gaming',
+        randomizeChapters: true,
+        chapters: [
+          {
+            id: 'seven-lives',
+            label: 'Seven lives',
+            summary: 'The community outcome no leaderboard can measure.',
+            kicker: 'The fact that changes everything',
+            title: 'A squad can become a lifeline.',
+            lead: 'The strongest CTG outcome is not a tournament result or a membership number.',
+            factKicker: 'Reported impact',
+            factTitle: 'Seven veterans credited this community with saving their lives.',
+            factBody: 'By the 2025 VFW National Convention, seven veterans had come forward to say that connections made through Combat Tested Gaming helped save their lives.',
+            humanKicker: 'What that really means',
+            humanTitle: 'The relationships are the intervention.',
+            humanBody: 'The claim is not that a particular game saved someone. It is that shared play created relationships—and those relationships gave people somewhere to turn when it mattered most.',
+            sourceLabel: 'Reported by VFW Magazine in 2025.',
+          },
+          {
+            id: 'benefits-in-discord',
+            label: 'Benefits inside Discord',
+            summary: 'A gaming community became a doorway to accredited help.',
+            kicker: 'Not where most people expect it',
+            title: 'A gaming server became a place to ask about VA benefits.',
+            lead: 'Someone can arrive looking for a teammate and find a qualified path through a practical problem.',
+            factKicker: 'Documented access',
+            factTitle: 'CTG brought a VFW Accredited Service Officer into Discord.',
+            factBody: 'VA News documented a CTG channel where an accredited Service Officer answered benefits questions in real time. VA and CTG also held a live health-care and benefits Q&A there in April 2024.',
+            humanKicker: 'The unexpected bridge',
+            humanTitle: 'Leisure and service do not have to live in separate buildings.',
+            humanBody: 'When trusted help appears inside a familiar community, someone can discover the next step before they are ready to make a formal appointment or explain everything from the beginning.',
+            sourceLabel: 'Service Officer access and the April 2024 Q&A documented by VA News.',
+          },
+          {
+            id: 'old-glory-playtest',
+            label: 'From community to playtest',
+            summary: 'A veteran-founded studio invited CTG members into early game testing.',
+            kicker: 'Behind the development curtain',
+            title: 'CTG members became game testers for a veteran-founded studio.',
+            lead: 'The community did not only play a finished release—it was invited into the development process.',
+            factKicker: 'Fall 2025',
+            factTitle: 'CTG tested Victory’s Grave: Outflank for several months.',
+            factBody: 'After a CTG member reached out in late summer or early fall 2025, Old Glory Studios connected with the community and allowed CTG members to test early builds of Victory’s Grave: Outflank for several months.',
+            humanKicker: 'How the door opened',
+            humanTitle: 'One member’s outreach created an opportunity for the whole community.',
+            humanBody: 'The relationship began because somebody recognized a veteran-founded studio, made contact, and followed through. CTG moved from audience to participant—and veteran players gained a place closer to where the game was taking shape.',
+            sourceLabel: 'CTG testing relationship and timing confirmed by CTG leadership; studio and game details from Old Glory Studios. Earlier industry contact also included Madfinger Games / Gray Zone Warfare.',
+          },
+          {
+            id: 'podcast-beyond-games',
+            label: 'Beyond game talk',
+            summary: 'The CTG microphone carries advocacy, mental health, and everyday life too.',
+            kicker: 'More than a gaming show',
+            title: 'CTG’s podcast talks about legislation, mental health, and life—not only games.',
+            lead: 'The community built its own place to discuss the full veteran experience.',
+            factKicker: 'What goes on the air',
+            factTitle: 'The subjects reach across the VFW mission.',
+            factBody: 'VFW Checkpoint reported that the podcast covers mental health, partnerships, Auxiliary involvement, VFW legislative priorities, and life in general while giving veteran voices a wider platform.',
+            humanKicker: 'Why the microphone matters',
+            humanTitle: 'A community becomes stronger when it can tell its own story.',
+            humanBody: 'The podcast lets members decide which conversations deserve more room. Gaming may open the door, but veteran voices determine what happens after people walk through it.',
+            sourceLabel: 'Podcast scope reported by VFW Checkpoint in November 2025.',
+          },
+          {
+            id: 'ai-coached-season',
+            label: 'An AI-coached season',
+            summary: 'CTG experimented with personalized coaching during Rocket League play.',
+            kicker: 'A historical experiment',
+            title: 'CTG ran an AI-coached Rocket League season.',
+            lead: 'The program has been willing to test new technology when it can make play more useful or enjoyable.',
+            factKicker: 'Season five',
+            factTitle: 'The 2025 league offered AI-powered coaching at no cost.',
+            factBody: 'For its spring 2025 Rocket League season, CTG used Omnic.AI to analyze gameplay and provide competitors with personalized feedback intended to help them improve future matches.',
+            humanKicker: 'The bigger signal',
+            humanTitle: 'Experimentation is part of the culture.',
+            humanBody: 'The lasting point is not one vendor or one season. It is that a veteran program can try new tools, learn from them, and keep adapting around the people it serves.',
+            sourceLabel: 'Historical season details published by VFW in April 2025.',
+          },
+          {
+            id: 'dont-fight-alone',
+            label: 'One human connection',
+            summary: 'A veteran introduction carried the mission into a wider conversation.',
+            kicker: 'The human route',
+            title: 'A U.S. Army veteran and Arma writer connected CTG with Bohemia Interactive.',
+            lead: 'The bridge came from someone who understood military service, storytelling, and gaming communities from the inside.',
+            factKicker: 'The person behind the bridge',
+            factTitle: 'Josh Hood saw where two missions overlapped.',
+            factBody: 'Hood is a U.S. Army combat veteran and author who wrote on Arma Reforger and now serves as military consultant and senior narrative writer for Arma 4. He connected CTG with Bohemia’s #DontFightAlone initiative—bringing two communities together around the belief that no veteran should have to fight alone.',
+            humanKicker: 'Why that belongs in the story',
+            humanTitle: 'One person can change the reach of a community.',
+            humanBody: 'Programs grow through human bridges: an introduction, a message, a shared belief, or someone willing to say, ‘You two should know each other.’ That kind of contribution is available to more people than they realize.',
+            sourceLabel: 'Hood’s military and Arma roles verified by Bohemia’s Make Arma Not War; CTG connection confirmed by CTG leadership.',
+          },
+        ],
+      },
+      {
+        id: 'modern-vfw',
+        label: 'A different kind of VFW',
+        summary: 'Built by veterans and open to more ways of belonging.',
+        kicker: 'A different kind of VFW',
+        title: 'Built and run by veterans—not merely marketed to them.',
+        lead: 'We built it ourselves from the ground up.',
+        factKicker: 'Who built it—and who can join',
+        factTitle: 'Veterans run the community.',
+        factBody: 'The VFW Foundation says every CTG streamer, podcaster, and moderator is a veteran. CTG is open to active duty, Guard, reservists, veterans, and family members.',
+        humanKicker: 'What this changes',
+        humanTitle: 'CTG is modernizing how veterans enter and participate in the VFW.',
+        humanBody: 'A veteran does not have to wait until leaving service, fit into a local Post’s culture, or play a particular game to find a role here. CTG creates another front door—and more ways to belong once someone walks through it.',
+        sourceLabel: 'Current participation and team details from the VFW Foundation.',
+        chapterTitle: 'Choose your way into a different kind of VFW.',
+        chapterPrompt: 'What brought you here—or what has kept you outside? Pick the part of the story that matters to you.',
+        chapterAriaLabel: 'Explore how CTG changes participation in the VFW',
+        chapters: [
+          {
+            id: 'digital-front-door',
+            label: 'The digital front door',
+            summary: 'A modern path into VFW people, programs, and support.',
+            kicker: 'The digital front door',
+            title: 'The VFW can have more than one front door.',
+            lead: 'CTG meets people online before asking them to walk into a building.',
+            factKicker: 'Foundation designation',
+            factTitle: 'CTG sits inside the VFW Foundation’s Digital Engagement strategy.',
+            factBody: 'The Foundation describes Digital Engagement as reaching younger, connected veterans through modern platforms. It calls CTG its premier digital entry point for technology, gaming, hardware, and digital-native supporters.',
+            humanKicker: 'What veterans experience',
+            humanTitle: 'A front door only works if people want to use it.',
+            humanBody: 'CTG can be someone’s first contact with the VFW through community, benefits help, advocacy, stories, or a shared interest—without requiring a traditional introduction.',
+            sourceLabel: 'Current VFW Foundation Digital Engagement description.',
+          },
+          {
+            id: 'use-your-voice',
+            label: 'Use your voice',
+            summary: 'Legislation and advocacy are ways to participate too.',
+            kicker: 'Use your voice',
+            title: 'You do not have to play to have a stake in the mission.',
+            lead: 'Some CTG members are there primarily for the legislative side of the VFW.',
+            factKicker: 'More than games',
+            factTitle: 'Veterans’ issues are part of the conversation.',
+            factBody: 'The CTG podcast covers VFW legislative priorities alongside mental health, community, partnerships, and everyday life. Inside the community, members can follow and discuss the issues affecting veterans and their families.',
+            humanKicker: 'Why it belongs here',
+            humanTitle: 'Advocacy is another form of service.',
+            humanBody: 'Staying informed, speaking up, and helping other veterans understand what is at stake can matter as much as joining a league or attending an event.',
+            sourceLabel: 'Legislative coverage confirmed by VFW Checkpoint; member motivation confirmed by CTG leadership.',
+          },
+          {
+            id: 'without-a-building',
+            label: 'Belong without a building',
+            summary: 'A national community when a local Post is not the right fit.',
+            kicker: 'Belong without a building',
+            title: 'Geography should not decide whether someone belongs.',
+            lead: 'Some veterans love their local Post. Others have not found one where they feel at home.',
+            factKicker: 'Another legitimate option',
+            factTitle: 'CTG is a daily-active national community.',
+            factBody: 'Its Discord gives veterans and service members persistent access to peers, veteran-only voice channels, programs, and resources regardless of where they live or whether they participate in a local Post.',
+            humanKicker: 'What this protects',
+            humanTitle: 'Belonging should not require fitting someone else’s mold.',
+            humanBody: 'CTG does not replace strong local Posts. It creates another valid home for younger veterans, remote members, and anyone who has encountered a culture that felt closed to them.',
+            sourceLabel: 'Daily-active and veteran-only community details from the VFW Foundation; cultural context from CTG leadership.',
+          },
+          {
+            id: 'built-by-veterans',
+            label: 'Built by veterans',
+            summary: 'The community was made from the ground up by the people inside it.',
+            kicker: 'Built by veterans',
+            title: 'Built and run by veterans—not merely marketed to them.',
+            lead: 'We built it ourselves from the ground up.',
+            factKicker: 'Who runs it',
+            factTitle: 'The public-facing team is veteran-led.',
+            factBody: 'The VFW Foundation says every CTG streamer, podcaster, and moderator is a veteran. The voices representing the community come from within the community.',
+            humanKicker: 'Why that feels different',
+            humanTitle: 'Members are not an audience. They are owners.',
+            humanBody: 'People can tell the difference between a program designed at them and a community built with them. Veteran leadership keeps CTG’s language, priorities, and culture grounded in lived experience.',
+            sourceLabel: 'Team composition confirmed by the VFW Foundation; origin confirmed by CTG leadership.',
+          },
+          {
+            id: 'choose-your-role',
+            label: 'Choose your role',
+            summary: 'Player, advocate, creator, mentor, organizer, listener—or simply present.',
+            kicker: 'Choose your role',
+            title: 'Participation does not have one correct shape.',
+            lead: 'CTG is open before, during, and after the transition out of military service.',
+            factKicker: 'Who can join',
+            factTitle: 'The doorway is wider than VFW membership.',
+            factBody: 'CTG welcomes active duty, Guard, reservists, veterans, and family members. People participate as players, advocates, creators, mentors, organizers, listeners, and friends.',
+            humanKicker: 'Permission to arrive quietly',
+            humanTitle: 'Connection can begin before contribution.',
+            humanBody: 'Someone can listen, watch, or simply be present until they find their place. Belonging does not need to be earned through performance, rank, a title, or a controller.',
+            sourceLabel: 'Current participation eligibility from the VFW Foundation; community roles confirmed by CTG leadership.',
+          },
+        ],
+      },
+    ],
   },
 };
 
@@ -116,19 +663,36 @@ function hasStrings(value: unknown, keys: string[]): value is Record<string, str
 }
 
 function isExperienceContent(value: unknown): value is ExperienceContent {
-  if (!isRecord(value) || value.schemaVersion !== 1 || typeof value.id !== 'string') return false;
+  if (!isRecord(value) || value.schemaVersion !== 4 || typeof value.id !== 'string') return false;
   if (typeof value.idleTimeoutSeconds !== 'number' || value.idleTimeoutSeconds < 15) return false;
   if (!hasStrings(value.brand, ['organization', 'product', 'tagline', 'offlineStatus'])) return false;
   if (!hasStrings(value.assets, ['brandLogo', 'qrCode'])) return false;
-  if (!hasStrings(value.home, ['eyebrow', 'headline', 'highlightedHeadline', 'lede', 'cta', 'touchNote', 'missionLabel', 'missionTitle', 'missionMeta'])) return false;
-  if (!hasStrings(value.completion, ['eyebrow', 'title', 'lede', 'promotionalLine', 'aboutKicker', 'aboutTitle', 'aboutBody', 'ctaKicker', 'ctaText', 'qrAlt', 'restartLabel'])) return false;
-  if (!hasStrings(value.mission, ['number', 'label', 'title', 'prompt', 'choiceAriaLabel', 'confirmLabel', 'retryHint'])) return false;
+  if (!hasStrings(value.home, ['eyebrow', 'headline', 'highlightedHeadline', 'lede', 'questionAriaLabel', 'yesLabel', 'yesDetail', 'noLabel', 'noDetail', 'touchNote', 'missionLabel', 'missionTitle', 'missionMeta'])) return false;
+  if (!hasStrings(value.completion, ['eyebrow', 'fallbackTitle', 'fallbackBody', 'multiTitle', 'multiBody', 'selectionPrefix', 'promotionalLine', 'realizationKicker', 'realizationTitle', 'realizationBody', 'nonGamerKicker', 'nonGamerTitle', 'nonGamerBody', 'nonGamerPromotionalLine', 'discoverLabel', 'restartLabel'])) return false;
+  if (!hasStrings(value.mission, ['number', 'label', 'yesTitle', 'noTitle', 'yesPrompt', 'noPrompt', 'yesChoiceAriaLabel', 'noChoiceAriaLabel', 'yesConfirmLabel', 'noConfirmLabel', 'noStillConfirmLabel', 'multiSelectNote'])) return false;
+  if (!hasStrings(value.discovery, ['eyebrow', 'title', 'prompt', 'choiceAriaLabel', 'exploreLabel', 'allTopicsLabel', 'moreInTopicLabel', 'surpriseAgainLabel', 'connectKicker', 'connectText', 'qrAlt', 'restartLabel'])) return false;
 
   const choices = value.mission.choices;
-  if (!Array.isArray(choices) || choices.length < 2 || choices.length > 6) return false;
-  if (!choices.every((choice) => hasStrings(choice, ['id', 'label', 'detail']) && typeof choice.correct === 'boolean')) return false;
+  if (!Array.isArray(choices) || choices.length < 4 || choices.length > 12) return false;
+  if (!choices.every((choice) => hasStrings(choice, ['id', 'branch', 'label', 'detail', 'outcomeTitle', 'outcomeBody']) && (choice.branch === 'yes' || choice.branch === 'no'))) return false;
   if (new Set(choices.map((choice) => choice.id)).size !== choices.length) return false;
-  return choices.filter((choice) => choice.correct).length === 1;
+  const yesChoices = choices.filter((choice) => choice.branch === 'yes');
+  const noChoices = choices.filter((choice) => choice.branch === 'no');
+  if (yesChoices.length < 2 || yesChoices.length > 6 || noChoices.length < 2 || noChoices.length > 6) return false;
+
+  const discoveryItems = value.discovery.items;
+  if (!Array.isArray(discoveryItems) || discoveryItems.length < 2 || discoveryItems.length > 6) return false;
+  if (!discoveryItems.every((item) => {
+    if (!hasStrings(item, ['id', 'label', 'summary', 'kicker', 'title', 'lead', 'factKicker', 'factTitle', 'factBody', 'humanKicker', 'humanTitle', 'humanBody', 'sourceLabel'])) return false;
+    if (item.randomizeChapters !== undefined && typeof item.randomizeChapters !== 'boolean') return false;
+    if (item.randomizeChapters === true && item.chapters === undefined) return false;
+    if (item.chapters === undefined) return true;
+    if (!hasStrings(item, ['chapterTitle', 'chapterPrompt', 'chapterAriaLabel'])) return false;
+    if (!Array.isArray(item.chapters) || item.chapters.length < 2 || item.chapters.length > 6) return false;
+    if (!item.chapters.every((chapter) => hasStrings(chapter, ['id', 'label', 'summary', 'kicker', 'title', 'lead', 'factKicker', 'factTitle', 'factBody', 'humanKicker', 'humanTitle', 'humanBody', 'sourceLabel']))) return false;
+    return new Set(item.chapters.map((chapter) => chapter.id)).size === item.chapters.length;
+  })) return false;
+  return new Set(discoveryItems.map((item) => item.id)).size === discoveryItems.length;
 }
 
 export async function loadExperience(): Promise<ExperienceContent> {
@@ -136,7 +700,7 @@ export async function loadExperience(): Promise<ExperienceContent> {
     const response = await fetch('/experience.json', { cache: 'no-store' });
     if (!response.ok) throw new Error(`Content pack returned ${response.status}.`);
     const candidate: unknown = await response.json();
-    if (!isExperienceContent(candidate)) throw new Error('Content pack did not match schema version 1.');
+    if (!isExperienceContent(candidate)) throw new Error('Content pack did not match schema version 4.');
     return candidate;
   } catch (error) {
     console.warn('CTG Engage is using its built-in fallback content.', error);

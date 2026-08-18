@@ -7,12 +7,17 @@ if (!appRoot) throw new Error('CTG Engage app root was not found.');
 
 const app = appRoot;
 
-type Screen = 'home' | 'mission' | 'complete';
+type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter';
+type OpeningAnswer = 'yes' | 'no' | '';
 
 let content: ExperienceContent;
 let screen: Screen = 'home';
-let selected = '';
-let showHint = false;
+let openingAnswer: OpeningAnswer = '';
+let selected: string[] = [];
+let discoveryId = '';
+let chapterId = '';
+let viewedSurpriseIds: string[] = [];
+let lastSurpriseId = '';
 let idleTimer = 0;
 
 function escapeHtml(value: string) {
@@ -35,25 +40,32 @@ function resetIdleTimer() {
   idleTimer = window.setTimeout(() => {
     if (screen !== 'home') {
       screen = 'home';
-      selected = '';
-      showHint = false;
+      openingAnswer = '';
+      selected = [];
+      discoveryId = '';
+      chapterId = '';
+      viewedSurpriseIds = [];
+      lastSurpriseId = '';
       render();
     }
   }, content.idleTimeoutSeconds * 1000);
 }
 
 function shell(body: string, step: number) {
+  const totalSteps = 5;
   return `<main class="kiosk-shell">
     <header class="brand-bar">
       <button class="wordmark" data-action="home" aria-label="Return to the ${escapeHtml(content.brand.product)} home screen">
         <img class="brand-logo" src="${escapeHtml(content.assets.brandLogo)}" alt="" aria-hidden="true">
         <span class="brand-name">${productName()}</span>
       </button>
-      <p class="tagline">${escapeHtml(content.brand.tagline)}</p>
+      ${step === 1
+        ? `<p class="tagline">${escapeHtml(content.brand.tagline)}</p>`
+        : '<button class="start-over" data-action="home"><span aria-hidden="true">↺</span> Start over</button>'}
     </header>
-    <div class="progress" aria-label="Step ${step} of 3">
-      <span>${String(step).padStart(2, '0')} / 03</span>
-      <span class="progress-track"><span style="width:${(step / 3) * 100}%"></span></span>
+    <div class="progress" aria-label="Step ${step} of ${totalSteps}">
+      <span>${String(step).padStart(2, '0')} / ${String(totalSteps).padStart(2, '0')}</span>
+      <span class="progress-track"><span style="width:${(step / totalSteps) * 100}%"></span></span>
     </div>
     ${body}
     <footer><span>${escapeHtml(content.brand.organization)}</span><span class="status"><i></i> ${escapeHtml(content.brand.offlineStatus)}</span></footer>
@@ -67,7 +79,16 @@ function homeScreen() {
       <p class="eyebrow">${escapeHtml(home.eyebrow)}</p>
       <h1 id="home-title" tabindex="-1">${escapeHtml(home.headline)}<br><em>${escapeHtml(home.highlightedHeadline)}</em></h1>
       <p class="lede">${escapeHtml(home.lede)}</p>
-      <button class="primary-button" data-action="start">${escapeHtml(home.cta)} <span aria-hidden="true">→</span></button>
+      <div class="opening-choices" role="group" aria-label="${escapeHtml(home.questionAriaLabel)}">
+        <button class="opening-choice" data-opening="yes">
+          <span><strong>${escapeHtml(home.yesLabel)}</strong><small>${escapeHtml(home.yesDetail)}</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button class="opening-choice" data-opening="no">
+          <span><strong>${escapeHtml(home.noLabel)}</strong><small>${escapeHtml(home.noDetail)}</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
       <p class="touch-note"><span aria-hidden="true">◎</span> ${escapeHtml(home.touchNote)}</p>
     </div>
     <div class="hero-art" aria-hidden="true">
@@ -81,8 +102,12 @@ function homeScreen() {
 
 function missionScreen() {
   const mission = content.mission;
-  const choiceButtons = mission.choices.map((choice, index) => `
-    <button class="choice ${selected === choice.id ? 'selected' : ''}" data-choice="${escapeHtml(choice.id)}" aria-pressed="${selected === choice.id}">
+  const availableChoices = mission.choices.filter((choice) => choice.branch === openingAnswer);
+  const confirmLabel = openingAnswer === 'yes'
+    ? mission.yesConfirmLabel
+    : selected.includes('still-no') ? mission.noStillConfirmLabel : mission.noConfirmLabel;
+  const choiceButtons = availableChoices.map((choice, index) => `
+    <button class="choice ${selected.includes(choice.id) ? 'selected' : ''}" data-choice="${escapeHtml(choice.id)}" aria-pressed="${selected.includes(choice.id)}">
       <span class="choice-key">${String.fromCharCode(65 + index)}</span>
       <span><strong>${escapeHtml(choice.label)}</strong><small>${escapeHtml(choice.detail)}</small></span>
       <span class="choice-check" aria-hidden="true">✓</span>
@@ -91,71 +116,212 @@ function missionScreen() {
   return shell(`<section class="screen mission-screen" aria-labelledby="mission-title">
     <div class="mission-heading">
       <p class="eyebrow">Mission ${escapeHtml(mission.number)} · ${escapeHtml(mission.label)}</p>
-      <h1 id="mission-title" tabindex="-1">${escapeHtml(mission.title)}</h1>
-      <p>${escapeHtml(mission.prompt)}</p>
+      <h1 id="mission-title" tabindex="-1">${escapeHtml(openingAnswer === 'no' ? mission.noTitle : mission.yesTitle)}</h1>
+      <p>${escapeHtml(openingAnswer === 'no' ? mission.noPrompt : mission.yesPrompt)}</p>
     </div>
-    <div class="choice-list" role="group" aria-label="${escapeHtml(mission.choiceAriaLabel)}">${choiceButtons}</div>
+    <div class="choice-list" role="group" aria-label="${escapeHtml(openingAnswer === 'no' ? mission.noChoiceAriaLabel : mission.yesChoiceAriaLabel)}">${choiceButtons}</div>
     <div class="mission-actions">
-      <p class="hint ${showHint ? 'visible' : ''}" role="status">${showHint ? escapeHtml(mission.retryHint) : ''}</p>
-      <button class="primary-button compact" data-action="confirm" ${selected ? '' : 'disabled'}>${escapeHtml(mission.confirmLabel)} <span aria-hidden="true">→</span></button>
+      <p class="selection-note">${openingAnswer === 'yes' ? escapeHtml(mission.multiSelectNote) : ''}</p>
+      <button class="primary-button compact" data-action="confirm" ${selected.length ? '' : 'disabled'}>${escapeHtml(confirmLabel)} <span aria-hidden="true">→</span></button>
     </div>
   </section>`, 2);
 }
 
 function completeScreen() {
   const completion = content.completion;
+  const selectedChoices = selected
+    .map((id) => content.mission.choices.find((choice) => choice.id === id))
+    .filter((choice): choice is ExperienceContent['mission']['choices'][number] => Boolean(choice));
+  const selectedChoice = selectedChoices[0];
+  const isMultiSelectResult = openingAnswer === 'yes' && selectedChoices.length > 1;
+  const isNonGamerResult = selected.includes('still-no');
+  const selectedLabels = selectedChoices.map((choice) => choice.label).join(', ');
+  const outcomeTitle = isMultiSelectResult ? completion.multiTitle : selectedChoice?.outcomeTitle ?? completion.fallbackTitle;
+  const outcomeBody = isMultiSelectResult
+    ? `${completion.multiBody} ${completion.selectionPrefix}: ${selectedLabels}.`
+    : selectedChoice?.outcomeBody ?? completion.fallbackBody;
+  const realizationKicker = isNonGamerResult ? completion.nonGamerKicker : completion.realizationKicker;
+  const realizationTitle = isNonGamerResult ? completion.nonGamerTitle : completion.realizationTitle;
+  const realizationBody = isNonGamerResult ? completion.nonGamerBody : completion.realizationBody;
+  const promotionalLine = isNonGamerResult ? completion.nonGamerPromotionalLine : completion.promotionalLine;
   return shell(`<section class="screen complete-screen" aria-labelledby="complete-title">
-    <div class="success-mark" aria-hidden="true"><span>✓</span></div>
+    <div class="success-mark" aria-hidden="true"><span>◎</span></div>
     <div class="complete-copy">
       <p class="eyebrow">${escapeHtml(completion.eyebrow)}</p>
-      <h1 id="complete-title" tabindex="-1">${escapeHtml(completion.title)}</h1>
-      <p class="lede">${escapeHtml(completion.lede)}</p>
-      <blockquote>“${escapeHtml(completion.promotionalLine)}”</blockquote>
+      <h1 id="complete-title" tabindex="-1">${escapeHtml(outcomeTitle)}</h1>
+      <p class="lede">${escapeHtml(outcomeBody)}</p>
+      <blockquote>“${escapeHtml(promotionalLine)}”</blockquote>
     </div>
     <aside class="ctg-card">
-      <p class="card-kicker">${escapeHtml(completion.aboutKicker)}</p>
-      <h2>${escapeHtml(completion.aboutTitle)}</h2>
-      <p>${escapeHtml(completion.aboutBody)}</p>
-      <div class="cta-row">
-        <div><span>${escapeHtml(completion.ctaKicker)}</span><strong>${escapeHtml(completion.ctaText)}</strong></div>
-        <img class="cta-qr" src="${escapeHtml(content.assets.qrCode)}" alt="${escapeHtml(completion.qrAlt)}">
-      </div>
+      <p class="card-kicker">${escapeHtml(realizationKicker)}</p>
+      <h2>${escapeHtml(realizationTitle)}</h2>
+      <p>${escapeHtml(realizationBody)}</p>
+      <button class="primary-button compact discovery-cta" data-action="discover">${escapeHtml(completion.discoverLabel)} <span aria-hidden="true">→</span></button>
     </aside>
     <button class="secondary-button" data-action="restart">${escapeHtml(completion.restartLabel)}</button>
   </section>`, 3);
 }
 
+function discoveryScreen() {
+  const discovery = content.discovery;
+  const choices = discovery.items.map((item, index) => `
+    <button class="discovery-choice" data-discovery="${escapeHtml(item.id)}">
+      <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
+      <span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.summary)}</small></span>
+      <span aria-hidden="true">→</span>
+    </button>`).join('');
+
+  return shell(`<section class="screen discovery-screen" aria-labelledby="discovery-title">
+    <div class="discovery-heading">
+      <p class="eyebrow">${escapeHtml(discovery.eyebrow)}</p>
+      <h1 id="discovery-title" tabindex="-1">${escapeHtml(discovery.title)}</h1>
+      <p>${escapeHtml(discovery.prompt)}</p>
+    </div>
+    <div class="discovery-grid" role="group" aria-label="${escapeHtml(discovery.choiceAriaLabel)}">${choices}</div>
+  </section>`, 4);
+}
+
+function chaptersScreen() {
+  const discovery = content.discovery;
+  const item = discovery.items.find((candidate) => candidate.id === discoveryId) ?? discovery.items[0];
+  const chapters = item.chapters ?? [];
+  const choices = chapters.map((chapter, index) => `
+    <button class="chapter-choice" data-chapter="${escapeHtml(chapter.id)}">
+      <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
+      <span><strong>${escapeHtml(chapter.label)}</strong><small>${escapeHtml(chapter.summary)}</small></span>
+      <span aria-hidden="true">→</span>
+    </button>`).join('');
+
+  return shell(`<section class="screen chapters-screen" aria-labelledby="chapters-title">
+    <div class="discovery-heading">
+      <p class="eyebrow">${escapeHtml(item.kicker)}</p>
+      <h1 id="chapters-title" tabindex="-1">${escapeHtml(item.chapterTitle ?? item.title)}</h1>
+      <p>${escapeHtml(item.chapterPrompt ?? item.lead)}</p>
+    </div>
+    <div class="chapter-grid" role="group" aria-label="${escapeHtml(item.chapterAriaLabel ?? item.label)}">${choices}</div>
+    <button class="secondary-button chapter-back" data-action="discover">${escapeHtml(discovery.allTopicsLabel)}</button>
+  </section>`, 5);
+}
+
+function showNextSurprise(item: ExperienceContent['discovery']['items'][number]) {
+  const chapters = item.chapters ?? [];
+  if (!chapters.length) {
+    screen = 'detail';
+    return;
+  }
+
+  let available = chapters.filter((chapter) => !viewedSurpriseIds.includes(chapter.id));
+  if (!available.length) {
+    viewedSurpriseIds = lastSurpriseId ? [lastSurpriseId] : [];
+    available = chapters.filter((chapter) => chapter.id !== lastSurpriseId);
+  }
+
+  const nextChapter = available[Math.floor(Math.random() * available.length)] ?? chapters[0];
+  chapterId = nextChapter.id;
+  viewedSurpriseIds = [...viewedSurpriseIds, nextChapter.id];
+  lastSurpriseId = nextChapter.id;
+  screen = 'chapter';
+}
+
+function detailScreen() {
+  const discovery = content.discovery;
+  const item = discovery.items.find((candidate) => candidate.id === discoveryId) ?? discovery.items[0];
+  const detail = screen === 'chapter'
+    ? item.chapters?.find((chapter) => chapter.id === chapterId) ?? item
+    : item;
+  const isRandomizedChapter = screen === 'chapter' && item.randomizeChapters === true;
+  const primaryAction = isRandomizedChapter ? 'surprise' : screen === 'chapter' ? 'chapters' : 'discover';
+  const primaryLabel = isRandomizedChapter
+    ? discovery.surpriseAgainLabel
+    : screen === 'chapter' ? discovery.moreInTopicLabel : discovery.exploreLabel;
+  return shell(`<section class="screen detail-screen" aria-labelledby="detail-title">
+    <div class="detail-heading">
+      <p class="eyebrow">${escapeHtml(detail.kicker)}</p>
+      <h1 id="detail-title" tabindex="-1">${escapeHtml(detail.title)}</h1>
+      <p>${escapeHtml(detail.lead)}</p>
+    </div>
+    <div class="detail-grid">
+      <article class="detail-card fact-card">
+        <p class="card-kicker">${escapeHtml(detail.factKicker)}</p>
+        <h2>${escapeHtml(detail.factTitle)}</h2>
+        <p>${escapeHtml(detail.factBody)}</p>
+      </article>
+      <article class="detail-card human-card">
+        <p class="card-kicker">${escapeHtml(detail.humanKicker)}</p>
+        <h2>${escapeHtml(detail.humanTitle)}</h2>
+        <p>${escapeHtml(detail.humanBody)}</p>
+        <small>${escapeHtml(detail.sourceLabel)}</small>
+      </article>
+    </div>
+    <div class="detail-actions">
+      <button class="primary-button compact" data-action="${primaryAction}">${escapeHtml(primaryLabel)} <span aria-hidden="true">↺</span></button>
+      <div class="connect-card">
+        <div><span>${escapeHtml(discovery.connectKicker)}</span><strong>${escapeHtml(discovery.connectText)}</strong></div>
+        <img class="cta-qr" src="${escapeHtml(content.assets.qrCode)}" alt="${escapeHtml(discovery.qrAlt)}">
+      </div>
+      <button class="secondary-button detail-restart" data-action="restart">${escapeHtml(discovery.restartLabel)}</button>
+    </div>
+  </section>`, 5);
+}
+
 function render(focusTarget: 'heading' | 'choice' = 'heading') {
-  app.innerHTML = screen === 'home' ? homeScreen() : screen === 'mission' ? missionScreen() : completeScreen();
+  app.innerHTML = screen === 'home'
+    ? homeScreen()
+    : screen === 'mission'
+      ? missionScreen()
+      : screen === 'complete'
+        ? completeScreen()
+        : screen === 'discovery'
+          ? discoveryScreen()
+          : screen === 'chapters'
+            ? chaptersScreen()
+          : detailScreen();
   const focusElement = focusTarget === 'choice' && selected
-    ? app.querySelector<HTMLElement>(`[data-choice="${CSS.escape(selected)}"]`)
+    ? app.querySelector<HTMLElement>(`[data-choice="${CSS.escape(selected[selected.length - 1] ?? '')}"]`)
     : app.querySelector<HTMLElement>('h1');
   focusElement?.focus({ preventScroll: true });
   resetIdleTimer();
 }
 
 app.addEventListener('click', (event) => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice], [data-opening], [data-discovery], [data-chapter]');
   if (!target) return;
   const action = target.dataset.action;
 
   if (action === 'home' || action === 'restart') {
-    screen = 'home'; selected = ''; showHint = false;
-  } else if (action === 'start') {
+    screen = 'home'; openingAnswer = ''; selected = []; discoveryId = ''; chapterId = ''; viewedSurpriseIds = []; lastSurpriseId = '';
+  } else if (action === 'discover') {
+    screen = 'discovery'; discoveryId = ''; chapterId = '';
+  } else if (action === 'chapters') {
+    screen = 'chapters'; chapterId = '';
+  } else if (action === 'surprise') {
+    const discoveryItem = content.discovery.items.find((item) => item.id === discoveryId);
+    if (discoveryItem) showNextSurprise(discoveryItem);
+  } else if (target.dataset.opening === 'yes' || target.dataset.opening === 'no') {
+    openingAnswer = target.dataset.opening;
+    selected = [];
     screen = 'mission';
   } else if (target.dataset.choice) {
-    selected = target.dataset.choice; showHint = false;
+    const choiceId = target.dataset.choice;
+    selected = openingAnswer === 'yes'
+      ? selected.includes(choiceId) ? selected.filter((id) => id !== choiceId) : [...selected, choiceId]
+      : [choiceId];
     render('choice');
     return;
-  } else if (action === 'confirm' && selected) {
-    const selectedChoice = content.mission.choices.find((choice) => choice.id === selected);
-    if (selectedChoice?.correct) {
-      screen = 'complete'; showHint = false;
+  } else if (target.dataset.discovery) {
+    discoveryId = target.dataset.discovery;
+    chapterId = '';
+    const discoveryItem = content.discovery.items.find((item) => item.id === discoveryId);
+    if (discoveryItem?.randomizeChapters && discoveryItem.chapters?.length) {
+      showNextSurprise(discoveryItem);
     } else {
-      showHint = true;
-      render('choice');
-      return;
+      screen = discoveryItem?.chapters?.length ? 'chapters' : 'detail';
     }
+  } else if (target.dataset.chapter) {
+    chapterId = target.dataset.chapter;
+    screen = 'chapter';
+  } else if (action === 'confirm' && selected.length) {
+    screen = 'complete';
   }
   render();
 });
