@@ -10,8 +10,16 @@ WorkingDirectory=/opt/ctg-engage
 ExecStart=/opt/ctg-engage/bin/ctg-engage
 Restart=on-failure
 RestartSec=2
+Environment=CTG_ENGAGE_WEB=/opt/ctg-engage/www
 Environment=CTG_ENGAGE_CONTENT=/opt/ctg-engage/content
 Environment=CTG_ENGAGE_DATA=/var/lib/ctg-engage
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/ctg-engage
+StateDirectory=ctg-engage
+UMask=0027
 
 [Install]
 WantedBy=multi-user.target

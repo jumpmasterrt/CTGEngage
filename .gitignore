@@ -9,6 +9,7 @@ backend/coverage.out
 
 # Runtime data
 data/
+out/
 *.db
 *.db-shm
 *.db-wal
