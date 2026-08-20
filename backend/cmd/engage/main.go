@@ -1,17 +1,26 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/subtle"
+	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
+	"sync"
 	"time"
 )
 
+const operatorTokenHeader = "X-CTG-Operator-Token"
+
 func main() {
 	webRoot := environmentOrDefault("CTG_ENGAGE_WEB", "www")
-	handler, err := newHandler(webRoot)
+	handler, err := newHandler(webRoot, systemPowerOff)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -27,7 +36,11 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
-func newHandler(webRoot string) (http.Handler, error) {
+func newHandler(webRoot string, powerOff func() error) (http.Handler, error) {
+	if powerOff == nil {
+		return nil, fmt.Errorf("power-off action is required")
+	}
+
 	root, err := filepath.Abs(webRoot)
 	if err != nil {
 		return nil, fmt.Errorf("resolve web root: %w", err)
@@ -44,11 +57,49 @@ func newHandler(webRoot string) (http.Handler, error) {
 		return nil, fmt.Errorf("web root %s has no index.html: %w", root, err)
 	}
 
+	operatorToken, err := newOperatorToken()
+	if err != nil {
+		return nil, fmt.Errorf("create operator token: %w", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "no-store")
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
+	})
+	mux.HandleFunc("GET /api/operator/session", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Cross-Origin-Resource-Policy", "same-origin")
+		_ = json.NewEncoder(w).Encode(map[string]string{"token": operatorToken})
+	})
+
+	var powerOffOnce sync.Once
+	mux.HandleFunc("POST /api/operator/poweroff", func(w http.ResponseWriter, r *http.Request) {
+		providedToken := r.Header.Get(operatorTokenHeader)
+		validToken := subtle.ConstantTimeCompare([]byte(providedToken), []byte(operatorToken)) == 1
+		if r.Header.Get("Origin") != "http://"+r.Host || !validToken {
+			http.Error(w, "operator authorization required", http.StatusForbidden)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(http.StatusAccepted)
+		_ = json.NewEncoder(w).Encode(map[string]string{"status": "shutting-down"})
+		if flusher, ok := w.(http.Flusher); ok {
+			flusher.Flush()
+		}
+
+		powerOffOnce.Do(func() {
+			go func() {
+				time.Sleep(750 * time.Millisecond)
+				if err := powerOff(); err != nil {
+					log.Printf("clean shutdown failed: %v", err)
+				}
+			}()
+		})
 	})
 
 	staticFiles := http.FileServer(http.Dir(root))
@@ -74,4 +125,30 @@ func environmentOrDefault(name string, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+func newOperatorToken() (string, error) {
+	token := make([]byte, 32)
+	if _, err := rand.Read(token); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(token), nil
+}
+
+func systemPowerOff() error {
+	command := exec.Command(
+		"/usr/bin/busctl",
+		"call",
+		"org.freedesktop.login1",
+		"/org/freedesktop/login1",
+		"org.freedesktop.login1.Manager",
+		"PowerOff",
+		"b",
+		"false",
+	)
+	output, err := command.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("systemd-logind poweroff: %w: %s", err, strings.TrimSpace(string(output)))
+	}
+	return nil
 }

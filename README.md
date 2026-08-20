@@ -48,3 +48,12 @@ sudo bash configure-expopi-kiosk.sh
 ```
 
 This disables desktop screen blanking, changes LightDM auto-login to `ctgga`, and launches Chromium from the operator's labwc autostart file using an isolated kiosk profile.
+
+## Shut down ExpoPi at an event
+
+1. Press and hold the **CTG Engage** wordmark in the upper-left corner for four seconds.
+2. On the operator screen, press and hold **Hold to shut down** for three seconds.
+3. Wait for the display to go black and the green activity light to stop blinking.
+4. Turn off the inline power switch.
+
+The installer grants the isolated `ctg-engage` service account only the system power-off action. The operator screen uses a runtime token and is available only from the locally served kiosk.

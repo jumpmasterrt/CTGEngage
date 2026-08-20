@@ -9,8 +9,9 @@ fi
 package_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 install_root="/opt/ctg-engage"
 service_file="/etc/systemd/system/ctg-engage.service"
+polkit_rule="/etc/polkit-1/rules.d/49-ctg-engage-power.rules"
 
-if [[ ! -f "${package_root}/bin/ctg-engage" || ! -f "${package_root}/www/index.html" || ! -f "${package_root}/launch-kiosk.sh" ]]; then
+if [[ ! -f "${package_root}/bin/ctg-engage" || ! -f "${package_root}/www/index.html" || ! -f "${package_root}/launch-kiosk.sh" || ! -f "${package_root}/polkit/49-ctg-engage-power.rules" ]]; then
   echo "The CTG Engage package is incomplete." >&2
   exit 1
 fi
@@ -32,6 +33,9 @@ chown -R root:root "${install_root}"
 chmod -R go-w "${install_root}"
 
 install -m 0644 "${package_root}/systemd/ctg-engage.service" "${service_file}"
+install -d -m 0755 /etc/polkit-1/rules.d
+install -m 0644 "${package_root}/polkit/49-ctg-engage-power.rules" "${polkit_rule}"
+systemctl reload-or-restart polkit.service
 systemctl daemon-reload
 systemctl enable ctg-engage.service
 systemctl restart ctg-engage.service

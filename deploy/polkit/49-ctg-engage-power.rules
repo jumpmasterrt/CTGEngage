@@ -1,0 +1,11 @@
+polkit.addRule(function(action, subject) {
+  var powerOffActions = [
+    "org.freedesktop.login1.power-off",
+    "org.freedesktop.login1.power-off-multiple-sessions",
+    "org.freedesktop.login1.power-off-ignore-inhibit"
+  ];
+
+  if (subject.user === "ctg-engage" && powerOffActions.indexOf(action.id) !== -1) {
+    return polkit.Result.YES;
+  }
+});

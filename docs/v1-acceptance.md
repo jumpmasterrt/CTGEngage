@@ -34,4 +34,5 @@ V1 is fieldable only when every required item below passes on ExpoPi.
 - [ ] The `proxenos` administrator account can recover the kiosk and view service status.
 - [ ] A first-time visitor can complete a useful path without coaching.
 - [ ] A booth volunteer can recover the opening screen using one documented action.
+- [ ] A booth operator can complete a clean touch-only shutdown before removing power.
 - [ ] The first field test records observed failures, confusion, completion time, and abandoned paths.

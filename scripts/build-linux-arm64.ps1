@@ -32,9 +32,11 @@ if (Test-Path -LiteralPath $OutputDirectory) {
 $binDirectory = Join-Path $OutputDirectory 'bin'
 $webDirectory = Join-Path $OutputDirectory 'www'
 $systemdDirectory = Join-Path $OutputDirectory 'systemd'
-New-Item -ItemType Directory -Path $binDirectory, $webDirectory, $systemdDirectory -Force | Out-Null
+$polkitDirectory = Join-Path $OutputDirectory 'polkit'
+New-Item -ItemType Directory -Path $binDirectory, $webDirectory, $systemdDirectory, $polkitDirectory -Force | Out-Null
 Copy-Item -Path (Join-Path $repositoryRoot 'frontend\dist\*') -Destination $webDirectory -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'deploy\systemd\ctg-engage.service') -Destination $systemdDirectory
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'deploy\polkit\49-ctg-engage-power.rules') -Destination $polkitDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'deploy\install-expopi.sh') -Destination $OutputDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'deploy\launch-kiosk.sh') -Destination $OutputDirectory
 Copy-Item -LiteralPath (Join-Path $repositoryRoot 'deploy\configure-expopi-kiosk.sh') -Destination $OutputDirectory

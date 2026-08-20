@@ -30,8 +30,9 @@ button:focus-visible { outline: 3px solid #f2b84b; outline-offset: 4px; }
   background-size: 36px 36px; content: ''; mask-image: linear-gradient(to bottom,black,transparent 85%);
 }
 .brand-bar, footer, .progress { display: flex; align-items: center; justify-content: space-between; }
-.wordmark { display: flex; align-items: center; gap: .8rem; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; }
+.wordmark { display: flex; align-items: center; gap: .8rem; padding: 0; border: 0; color: inherit; background: transparent; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-touch-callout: none; }
 .brand-logo { width: 2.8rem; height: 2.8rem; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+.wordmark.is-holding .brand-logo { animation: operator-entry-hold 4s linear both; }
 .brand-name { font-size: clamp(1rem,2vw,1.35rem); font-weight: 300; letter-spacing: .12em; }
 .brand-name strong { color: #a9c98f; font-weight: 800; }
 .tagline { margin: 0; color: #b7c1b8; font-family: Georgia,serif; font-style: italic; }
@@ -154,8 +155,49 @@ footer { padding-top: 1rem; border-top: 1px solid rgba(129,154,137,.25); color: 
 .status { display: flex; align-items: center; gap: .5rem; }
 .status i { width: .45rem; height: .45rem; border-radius: 50%; background: #8fbd6e; box-shadow: 0 0 .6rem #8fbd6e; }
 
+.operator-shell { grid-template-rows: auto 1fr auto; }
+.operator-wordmark { cursor: default; }
+.operator-label { margin: 0; color: #efb54a; font-size: .72rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.operator-screen { align-self: center; width: min(52rem,100%); margin: 0 auto; padding: 3rem 0; }
+.operator-screen h1 { max-width: 48rem; font-size: clamp(3rem,6vw,6rem); line-height: .96; }
+.operator-screen .lede { max-width: 46rem; }
+.operator-actions { display: flex; align-items: center; gap: 2rem; margin-top: 2rem; }
+.shutdown-control {
+  position: relative;
+  display: grid;
+  min-width: min(100%,25rem);
+  min-height: 6rem;
+  overflow: hidden;
+  padding: 1rem 1.4rem;
+  border: 1px solid #b16b55;
+  color: #f7eee9;
+  background: #3c1f1a;
+  text-align: left;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+.shutdown-control:disabled { cursor: wait; opacity: .78; }
+.shutdown-fill { position: absolute; inset: 0; background: #a74634; transform: scaleX(0); transform-origin: left; transition: transform 0s linear; }
+.shutdown-control.is-holding .shutdown-fill { transform: scaleX(1); transition-duration: 3s; }
+.shutdown-copy { position: relative; z-index: 1; align-self: center; }
+.shutdown-copy strong, .shutdown-copy small { display: block; }
+.shutdown-copy strong { font-size: 1.15rem; }
+.shutdown-copy small { margin-top: .35rem; color: #d6b7ae; font-size: .8rem; }
+.operator-return { grid-column: auto; flex: 0 0 auto; }
+.shutdown-indicator { display: flex; gap: .7rem; margin-top: 2.5rem; }
+.shutdown-indicator span { width: .8rem; height: .8rem; border-radius: 50%; background: #efb54a; animation: shutdown-pulse 1.2s ease-in-out infinite; }
+.shutdown-indicator span:nth-child(2) { animation-delay: .15s; }
+.shutdown-indicator span:nth-child(3) { animation-delay: .3s; }
+
 @keyframes arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes operator-entry-hold {
+  0% { filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
+  100% { filter: drop-shadow(0 0 1.1rem #efb54a); transform: scale(1.08); }
+}
+@keyframes shutdown-pulse { 0%,100% { opacity: .25; transform: scale(.8); } 50% { opacity: 1; transform: scale(1); } }
 @media (max-width:800px) {
   .home-screen { grid-template-columns: 1fr; }
   .hero-copy { padding-bottom: 0; }
@@ -170,6 +212,8 @@ footer { padding-top: 1rem; border-top: 1px solid rgba(129,154,137,.25); color: 
   .detail-actions { grid-template-columns: 1fr; }
   .connect-card { justify-content: space-between; }
   .detail-restart { justify-self: start; }
+  .operator-actions { align-items: stretch; flex-direction: column; }
+  .operator-return { align-self: flex-start; }
 }
 @media (max-width:520px) {
   .tagline { display: none; }

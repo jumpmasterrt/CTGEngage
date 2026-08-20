@@ -7,8 +7,9 @@ if (!appRoot) throw new Error('CTG Engage app root was not found.');
 
 const app = appRoot;
 
-type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter';
+type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'operator';
 type OpeningAnswer = 'yes' | 'no' | '';
+type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'failed';
 
 let content: ExperienceContent;
 let screen: Screen = 'home';
@@ -19,6 +20,13 @@ let chapterId = '';
 let viewedSurpriseIds: string[] = [];
 let lastSurpriseId = '';
 let idleTimer = 0;
+let operatorEntryTimer = 0;
+let shutdownTimer = 0;
+let suppressOperatorClick = false;
+let powerState: PowerState = 'idle';
+
+const operatorEntryHoldMilliseconds = 4000;
+const shutdownHoldMilliseconds = 3000;
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({
@@ -55,7 +63,7 @@ function shell(body: string, step: number) {
   const totalSteps = 5;
   return `<main class="kiosk-shell">
     <header class="brand-bar">
-      <button class="wordmark" data-action="home" aria-label="Return to the ${escapeHtml(content.brand.product)} home screen">
+      <button class="wordmark" data-action="home" data-operator-entry aria-label="Return to the ${escapeHtml(content.brand.product)} home screen">
         <img class="brand-logo" src="${escapeHtml(content.assets.brandLogo)}" alt="" aria-hidden="true">
         <span class="brand-name">${productName()}</span>
       </button>
@@ -264,8 +272,88 @@ function detailScreen() {
   </section>`, 5);
 }
 
+function operatorScreen() {
+  const isRequesting = powerState === 'requesting';
+  const isShuttingDown = powerState === 'shutting-down';
+  const hasFailed = powerState === 'failed';
+  const statusTitle = isShuttingDown
+    ? 'ExpoPi is shutting down'
+    : isRequesting
+      ? 'Requesting a clean shutdown'
+      : 'Shut down ExpoPi safely';
+  const statusBody = isShuttingDown
+    ? 'Wait for the display to go black and the green activity light to stop blinking. Then use the inline power switch.'
+    : hasFailed
+      ? 'ExpoPi did not accept the shutdown request. Return to Engage and try again, or use the proxenos administrator account.'
+      : 'Press and hold the control below for three seconds. Engage will stop services and close the filesystem before power is removed.';
+
+  return `<main class="kiosk-shell operator-shell">
+    <header class="brand-bar">
+      <span class="wordmark operator-wordmark">
+        <img class="brand-logo" src="${escapeHtml(content.assets.brandLogo)}" alt="" aria-hidden="true">
+        <span class="brand-name">${productName()}</span>
+      </span>
+      <p class="operator-label">Operator controls</p>
+    </header>
+    <section class="screen operator-screen" aria-labelledby="operator-title" aria-live="polite">
+      <p class="eyebrow">Event operations</p>
+      <h1 id="operator-title" tabindex="-1">${statusTitle}</h1>
+      <p class="lede">${statusBody}</p>
+      ${isShuttingDown
+        ? '<div class="shutdown-indicator" aria-hidden="true"><span></span><span></span><span></span></div>'
+        : `<div class="operator-actions">
+            <button class="shutdown-control ${isRequesting ? 'is-requesting' : ''}" data-shutdown-control ${isRequesting ? 'disabled' : ''}>
+              <span class="shutdown-fill" aria-hidden="true"></span>
+              <span class="shutdown-copy"><strong>${hasFailed ? 'Hold to retry shutdown' : 'Hold to shut down'}</strong><small>Keep holding for three seconds</small></span>
+            </button>
+            <button class="secondary-button operator-return" data-action="operator-return">Return to Engage</button>
+          </div>`}
+    </section>
+    <footer><span>Local operator access</span><span class="status"><i></i> ExpoPi</span></footer>
+  </main>`;
+}
+
+async function requestPowerOff() {
+  powerState = 'requesting';
+  render();
+
+  try {
+    const sessionResponse = await fetch('/api/operator/session', { cache: 'no-store' });
+    if (!sessionResponse.ok) throw new Error('Operator session unavailable.');
+    const session = await sessionResponse.json() as { token?: unknown };
+    if (typeof session.token !== 'string' || !session.token) throw new Error('Operator token unavailable.');
+
+    const powerResponse = await fetch('/api/operator/poweroff', {
+      method: 'POST',
+      headers: { 'X-CTG-Operator-Token': session.token },
+    });
+    if (!powerResponse.ok) throw new Error('Shutdown request rejected.');
+    powerState = 'shutting-down';
+  } catch {
+    powerState = 'failed';
+  }
+
+  render();
+}
+
+function cancelOperatorEntryHold() {
+  window.clearTimeout(operatorEntryTimer);
+  operatorEntryTimer = 0;
+  app.querySelector<HTMLElement>('[data-operator-entry].is-holding')?.classList.remove('is-holding');
+}
+
+function cancelShutdownHold() {
+  window.clearTimeout(shutdownTimer);
+  shutdownTimer = 0;
+  app.querySelector<HTMLElement>('[data-shutdown-control].is-holding')?.classList.remove('is-holding');
+}
+
 function render(focusTarget: 'heading' | 'choice' = 'heading') {
-  app.innerHTML = screen === 'home'
+  cancelOperatorEntryHold();
+  cancelShutdownHold();
+  app.innerHTML = screen === 'operator'
+    ? operatorScreen()
+    : screen === 'home'
     ? homeScreen()
     : screen === 'mission'
       ? missionScreen()
@@ -286,10 +374,18 @@ function render(focusTarget: 'heading' | 'choice' = 'heading') {
 app.addEventListener('click', (event) => {
   const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice], [data-opening], [data-discovery], [data-chapter]');
   if (!target) return;
+  if (suppressOperatorClick && target.hasAttribute('data-operator-entry')) {
+    suppressOperatorClick = false;
+    event.preventDefault();
+    return;
+  }
   const action = target.dataset.action;
 
   if (action === 'home' || action === 'restart') {
     screen = 'home'; openingAnswer = ''; selected = []; discoveryId = ''; chapterId = ''; viewedSurpriseIds = []; lastSurpriseId = '';
+  } else if (action === 'operator-return') {
+    screen = 'home';
+    powerState = 'idle';
   } else if (action === 'discover') {
     screen = 'discovery'; discoveryId = ''; chapterId = '';
   } else if (action === 'chapters') {
@@ -326,6 +422,46 @@ app.addEventListener('click', (event) => {
   render();
 });
 
+app.addEventListener('pointerdown', (event) => {
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-operator-entry], [data-shutdown-control]');
+  if (!target) return;
+
+  if (target.hasAttribute('data-operator-entry')) {
+    cancelOperatorEntryHold();
+    target.classList.add('is-holding');
+    operatorEntryTimer = window.setTimeout(() => {
+      operatorEntryTimer = 0;
+      suppressOperatorClick = true;
+      screen = 'operator';
+      powerState = 'idle';
+      render();
+      window.setTimeout(() => { suppressOperatorClick = false; }, 800);
+    }, operatorEntryHoldMilliseconds);
+  }
+
+  if (target.hasAttribute('data-shutdown-control') && powerState !== 'requesting' && powerState !== 'shutting-down') {
+    cancelShutdownHold();
+    target.classList.add('is-holding');
+    shutdownTimer = window.setTimeout(() => {
+      shutdownTimer = 0;
+      void requestPowerOff();
+    }, shutdownHoldMilliseconds);
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  cancelOperatorEntryHold();
+  cancelShutdownHold();
+});
+window.addEventListener('pointercancel', () => {
+  cancelOperatorEntryHold();
+  cancelShutdownHold();
+});
+app.addEventListener('contextmenu', (event) => {
+  if ((event.target as HTMLElement).closest('[data-operator-entry], [data-shutdown-control]')) {
+    event.preventDefault();
+  }
+});
 window.addEventListener('pointerdown', resetIdleTimer, { passive: true });
 window.addEventListener('keydown', resetIdleTimer, { passive: true });
 

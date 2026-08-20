@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -8,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestHandlerServesKioskAndHealth(t *testing.T) {
@@ -15,7 +17,7 @@ func TestHandlerServesKioskAndHealth(t *testing.T) {
 	writeTestFile(t, webRoot, "index.html", "<title>CTG Engage</title>")
 	writeTestFile(t, webRoot, "experience.json", `{"schemaVersion":4}`)
 
-	handler, err := newHandler(webRoot)
+	handler, err := newHandler(webRoot, func() error { return nil })
 	if err != nil {
 		t.Fatalf("newHandler() error = %v", err)
 	}
@@ -62,7 +64,7 @@ func TestHandlerServesKioskAndHealth(t *testing.T) {
 }
 
 func TestHandlerRejectsMissingWebRoot(t *testing.T) {
-	_, err := newHandler(filepath.Join(t.TempDir(), "missing"))
+	_, err := newHandler(filepath.Join(t.TempDir(), "missing"), func() error { return nil })
 	if err == nil {
 		t.Fatal("newHandler() error = nil, want missing web root error")
 	}
@@ -72,7 +74,7 @@ func TestHandlerRejectsWriteMethods(t *testing.T) {
 	webRoot := t.TempDir()
 	writeTestFile(t, webRoot, "index.html", "CTG Engage")
 
-	handler, err := newHandler(webRoot)
+	handler, err := newHandler(webRoot, func() error { return nil })
 	if err != nil {
 		t.Fatalf("newHandler() error = %v", err)
 	}
@@ -83,6 +85,94 @@ func TestHandlerRejectsWriteMethods(t *testing.T) {
 
 	if response.Code != http.StatusMethodNotAllowed {
 		t.Errorf("status = %d, want %d", response.Code, http.StatusMethodNotAllowed)
+	}
+}
+
+func TestHandlerRequiresOperatorAuthorization(t *testing.T) {
+	webRoot := t.TempDir()
+	writeTestFile(t, webRoot, "index.html", "CTG Engage")
+
+	handler, err := newHandler(webRoot, func() error {
+		t.Error("power-off action ran without operator authorization")
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("newHandler() error = %v", err)
+	}
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	request, err := http.NewRequest(http.MethodPost, server.URL+"/api/operator/poweroff", nil)
+	if err != nil {
+		t.Fatalf("create request: %v", err)
+	}
+	request.Header.Set("Origin", server.URL)
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatalf("POST poweroff: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusForbidden {
+		t.Errorf("status = %d, want %d", response.StatusCode, http.StatusForbidden)
+	}
+}
+
+func TestHandlerAcceptsSameOriginPowerOff(t *testing.T) {
+	webRoot := t.TempDir()
+	writeTestFile(t, webRoot, "index.html", "CTG Engage")
+	powerOffCalled := make(chan struct{}, 1)
+
+	handler, err := newHandler(webRoot, func() error {
+		powerOffCalled <- struct{}{}
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("newHandler() error = %v", err)
+	}
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	sessionResponse, err := http.Get(server.URL + "/api/operator/session")
+	if err != nil {
+		t.Fatalf("GET operator session: %v", err)
+	}
+	defer sessionResponse.Body.Close()
+
+	var session struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(sessionResponse.Body).Decode(&session); err != nil {
+		t.Fatalf("decode operator session: %v", err)
+	}
+	if session.Token == "" {
+		t.Fatal("operator session token is empty")
+	}
+
+	request, err := http.NewRequest(http.MethodPost, server.URL+"/api/operator/poweroff", nil)
+	if err != nil {
+		t.Fatalf("create request: %v", err)
+	}
+	request.Header.Set("Origin", server.URL)
+	request.Header.Set(operatorTokenHeader, session.Token)
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatalf("POST poweroff: %v", err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusAccepted {
+		t.Errorf("status = %d, want %d", response.StatusCode, http.StatusAccepted)
+	}
+
+	select {
+	case <-powerOffCalled:
+	case <-time.After(2 * time.Second):
+		t.Fatal("power-off action was not called")
 	}
 }
 

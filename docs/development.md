@@ -33,4 +33,6 @@ go run .\cmd\engage
 
 Open `http://127.0.0.1:8080` and verify `http://127.0.0.1:8080/api/health` returns `{"status":"ok"}`.
 
+The production kiosk includes a touch-only operator shutdown. Hold the upper-left CTG Engage wordmark for four seconds, then hold the shutdown control for three seconds. The backend validates a same-origin runtime token before asking `systemd-logind` for a clean power-off. ExpoPi's installer supplies a polkit rule restricted to that one action for the `ctg-engage` service account.
+
 Visual Studio Community can remain installed for general Windows development, but VS Code is the primary editor for this Go and vanilla TypeScript workspace.
