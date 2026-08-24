@@ -33,6 +33,10 @@ go run .\cmd\engage
 
 Open `http://127.0.0.1:8080` and verify `http://127.0.0.1:8080/api/health` returns `{"status":"ok"}`.
 
-The production kiosk includes a touch-only operator shutdown. Hold the upper-left CTG Engage wordmark for four seconds, then hold the shutdown control for three seconds. The backend validates a same-origin runtime token before asking `systemd-logind` for a clean power-off. ExpoPi's installer supplies a polkit rule restricted to that one action for the `ctg-engage` service account.
+The production kiosk includes touch-only operator restart and shutdown controls. Hold the upper-left CTG Engage wordmark for four seconds, then hold the desired power control for three seconds. The backend validates a same-origin runtime token before asking `systemd-logind` for a clean reboot or power-off. ExpoPi's installer supplies a polkit rule restricted to those two actions for the `ctg-engage` service account.
+
+Anonymous field-test events are appended to `${CTG_ENGAGE_DATA}/interaction-events.jsonl` (`/var/lib/ctg-engage` on ExpoPi). The log contains only the active package ID, random session identifiers, kiosk content IDs, elapsed time, and reset reasons. It is capped at 5 MiB with one rotated backup and is not transmitted.
+
+In F5/Vite development, `content/active-package.json` chooses the organization package. The packaged Go service uses `CTG_ENGAGE_PACKAGE` and exposes the selection through `/api/config`. Both modes load the same manifest contract from `content/packages/<package-id>`.
 
 Visual Studio Community can remain installed for general Windows development, but VS Code is the primary editor for this Go and vanilla TypeScript workspace.

@@ -1,0 +1,157 @@
+{
+  "schemaVersion": 4,
+  "id": "alg-portability-demo-v1",
+  "idleTimeoutSeconds": 120,
+  "brand": {
+    "organization": "American Legion Gaming",
+    "product": "ALG Package Demo",
+    "tagline": "Find Your Squad.",
+    "offlineStatus": "Internal proof of concept"
+  },
+  "assets": {
+    "brandLogo": "branding/alg-demo-mark.svg",
+    "qrCode": "branding/algvets-qr.svg"
+  },
+  "home": {
+    "eyebrow": "Internal portability demo",
+    "headline": "Find your",
+    "highlightedHeadline": "squad.",
+    "lede": "American Legion Gaming uses gaming, esports, and online community to connect veterans, servicemembers, Legion Family members, and supporters.",
+    "questionAriaLabel": "What brings you to American Legion Gaming?",
+    "yesLabel": "A place to play",
+    "yesDetail": "Games, competition, events, and shared experiences.",
+    "noLabel": "A way forward",
+    "noDetail": "Connection, support, or a path into gaming and technology.",
+    "touchNote": "Choose the doorway that sounds useful",
+    "missionLabel": "The three pillars",
+    "missionTitle": "Comfort. Connection. Careers.",
+    "missionMeta": "Internal demo · not an official ALG product"
+  },
+  "mission": {
+    "number": "01",
+    "label": "Choose a doorway",
+    "yesTitle": "How would you like to play?",
+    "noTitle": "What would help most?",
+    "yesPrompt": "Choose every kind of experience that sounds good.",
+    "noPrompt": "Pick the first doorway you would want to explore.",
+    "yesChoiceAriaLabel": "Choose American Legion Gaming play experiences",
+    "noChoiceAriaLabel": "Choose an American Legion Gaming support doorway",
+    "yesConfirmLabel": "Show me where it leads",
+    "noConfirmLabel": "Explore this doorway",
+    "noStillConfirmLabel": "Explore American Legion Gaming",
+    "multiSelectNote": "Choose one or both.",
+    "choices": [
+      {
+        "id": "online-play",
+        "branch": "yes",
+        "label": "Online play",
+        "detail": "Find teammates, join community events, and keep the connection going from home.",
+        "outcomeTitle": "Your squad does not need to live nearby.",
+        "outcomeBody": "Online community gives veterans and servicemembers a shared place to play, talk, and stay connected across distance."
+      },
+      {
+        "id": "live-events",
+        "branch": "yes",
+        "label": "Live events",
+        "detail": "Free play, tournaments, racing, retro games, and a reason to gather in person.",
+        "outcomeTitle": "The game can become the gathering place.",
+        "outcomeBody": "American Legion Gaming has used gaming lounges and event activations to make connection immediate, social, and welcoming."
+      },
+      {
+        "id": "connection",
+        "branch": "no",
+        "label": "Connection",
+        "detail": "A modern community for camaraderie, shared experiences, and finding people who understand.",
+        "outcomeTitle": "Connection is one of the pillars.",
+        "outcomeBody": "Gaming creates an easy first activity, but the larger goal is a community where relationships can grow online and in person."
+      },
+      {
+        "id": "careers",
+        "branch": "no",
+        "label": "Careers",
+        "detail": "Explore education and work in gaming, technology, cybersecurity, and digital spaces.",
+        "outcomeTitle": "A shared interest can point toward a future.",
+        "outcomeBody": "The Careers pillar connects interest in games and technology with resources, education, and professional possibilities."
+      }
+    ]
+  },
+  "completion": {
+    "eyebrow": "You found a doorway",
+    "fallbackTitle": "There is a place to begin.",
+    "fallbackBody": "American Legion Gaming uses familiar interests to create comfort, connection, and new possibilities.",
+    "multiTitle": "Play can open more than one door.",
+    "multiBody": "Online community and live events can reinforce one another—the relationship can begin anywhere.",
+    "selectionPrefix": "Your interests",
+    "promotionalLine": "Find your squad. Build what comes next.",
+    "realizationKicker": "A practical first step",
+    "realizationTitle": "Start with what would help today.",
+    "realizationBody": "Connection and careers do not sit outside the gaming mission. They are part of why the community exists.",
+    "nonGamerKicker": "A wider doorway",
+    "nonGamerTitle": "You do not need to compete to belong.",
+    "nonGamerBody": "People can participate through community, service, mentorship, events, technical work, and support roles.",
+    "nonGamerPromotionalLine": "The mission is larger than the match.",
+    "discoverLabel": "Explore the three pillars",
+    "restartLabel": "Choose again"
+  },
+  "discovery": {
+    "eyebrow": "Go deeper",
+    "title": "Three pillars. One community.",
+    "prompt": "Choose the part of American Legion Gaming you would like to understand first.",
+    "choiceAriaLabel": "Choose an American Legion Gaming pillar",
+    "exploreLabel": "Explore another pillar",
+    "allTopicsLabel": "Back to all pillars",
+    "moreInTopicLabel": "More in this pillar",
+    "surpriseAgainLabel": "Choose another",
+    "connectKicker": "Learn more",
+    "connectText": "Visit algvets.org",
+    "qrAlt": "QR code for the American Legion Gaming website",
+    "restartLabel": "Start over",
+    "items": [
+      {
+        "id": "comfort",
+        "label": "Comfort",
+        "summary": "Play, recreation, and room to breathe.",
+        "kicker": "Comfort",
+        "title": "Sometimes the useful thing is a place to exhale.",
+        "lead": "Games can provide recreation, focus, and a shared activity during stressful or isolating seasons.",
+        "factKicker": "ALG pillar",
+        "factTitle": "Comfort includes recreation and mental well-being.",
+        "factBody": "American Legion Gaming describes Comfort as using games for recreation, stress reduction, and support against isolation.",
+        "humanKicker": "Why it matters",
+        "humanTitle": "A low-pressure activity can make room for people.",
+        "humanBody": "Nobody has to begin with a heavy conversation. Playing alongside someone can be enough for the first visit.",
+        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org."
+      },
+      {
+        "id": "connection",
+        "label": "Connection",
+        "summary": "Relationships built online and in person.",
+        "kicker": "Connection",
+        "title": "The squad is the lasting part.",
+        "lead": "Shared games and events give veterans and servicemembers an immediate reason to interact.",
+        "factKicker": "ALG pillar",
+        "factTitle": "Connection bridges digital and physical communities.",
+        "factBody": "ALG describes gaming as a modern tool for camaraderie, recruitment, veteran support, and community building.",
+        "humanKicker": "Why it matters",
+        "humanTitle": "The first conversation already has a subject.",
+        "humanBody": "A match, race, tournament, or community event can replace an awkward introduction with something people can do together.",
+        "sourceLabel": "Internal demo content adapted from public ALG and American Legion reporting."
+      },
+      {
+        "id": "careers",
+        "label": "Careers",
+        "summary": "Turn digital interests into practical possibilities.",
+        "kicker": "Careers",
+        "title": "Gaming and technology contain more roles than most people see.",
+        "lead": "Interest in games can lead toward education, technical skills, cybersecurity, content, events, and other work.",
+        "factKicker": "ALG pillar",
+        "factTitle": "Careers connects interest with opportunity.",
+        "factBody": "ALG says its Careers pillar helps veterans explore education and employment in gaming, technology, and digital spaces.",
+        "humanKicker": "Why it matters",
+        "humanTitle": "A hobby can reveal an overlooked strength.",
+        "humanBody": "Teamwork, systems thinking, communication, production, and technical curiosity can become starting points for a new direction.",
+        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org."
+      }
+    ]
+  }
+}

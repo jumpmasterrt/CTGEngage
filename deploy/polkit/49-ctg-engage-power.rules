@@ -1,11 +1,14 @@
 polkit.addRule(function(action, subject) {
-  var powerOffActions = [
+  var powerActions = [
     "org.freedesktop.login1.power-off",
     "org.freedesktop.login1.power-off-multiple-sessions",
-    "org.freedesktop.login1.power-off-ignore-inhibit"
+    "org.freedesktop.login1.power-off-ignore-inhibit",
+    "org.freedesktop.login1.reboot",
+    "org.freedesktop.login1.reboot-multiple-sessions",
+    "org.freedesktop.login1.reboot-ignore-inhibit"
   ];
 
-  if (subject.user === "ctg-engage" && powerOffActions.indexOf(action.id) !== -1) {
+  if (subject.user === "ctg-engage" && powerActions.indexOf(action.id) !== -1) {
     return polkit.Result.YES;
   }
 });

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  publicDir: '../content/packs/default',
+  publicDir: '../content',
 });

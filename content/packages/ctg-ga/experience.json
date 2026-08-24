@@ -9,8 +9,8 @@
     "offlineStatus": "Offline experience ready"
   },
   "assets": {
-    "brandLogo": "/branding/Transparent%20CTG%20Tag%20Only.png",
-    "qrCode": "/branding/CTG%20QR.png"
+    "brandLogo": "branding/Transparent CTG Tag Only.png",
+    "qrCode": "branding/CTG QR.png"
   },
   "home": {
     "eyebrow": "One honest question",

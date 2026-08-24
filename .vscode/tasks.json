@@ -13,13 +13,13 @@
       "problemMatcher": {
         "owner": "ctg-engage",
         "pattern": {
-          "regexp": "^(.*)$",
+          "regexp": "^(__CTG_ENGAGE_NEVER_MATCHES__)$",
           "message": 1
         },
         "background": {
           "activeOnStart": true,
           "beginsPattern": "^.*vite.*$",
-          "endsPattern": "^.*Local:.*$"
+          "endsPattern": "^.*ready in.*$"
         }
       },
       "presentation": {

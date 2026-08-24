@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "alg-demo",
+  "name": "American Legion Gaming Demo",
+  "organization": "American Legion Gaming",
+  "locale": "en-US",
+  "experience": "experience.json",
+  "theme": {
+    "background": "#081429",
+    "surface": "#142b4a",
+    "primary": "#f4c04e",
+    "secondary": "#e24a4a"
+  }
+}

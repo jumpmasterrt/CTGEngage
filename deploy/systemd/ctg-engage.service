@@ -13,6 +13,7 @@ RestartSec=2
 Environment=CTG_ENGAGE_WEB=/opt/ctg-engage/www
 Environment=CTG_ENGAGE_CONTENT=/opt/ctg-engage/content
 Environment=CTG_ENGAGE_DATA=/var/lib/ctg-engage
+Environment=CTG_ENGAGE_PACKAGE=ctg-ga
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectHome=true

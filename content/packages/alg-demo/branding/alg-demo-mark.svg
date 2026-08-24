@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">ALG package demo mark</title>
+  <desc id="desc">An internal proof-of-concept mark, not an official American Legion Gaming logo.</desc>
+  <rect width="160" height="160" rx="24" fill="#081429"/>
+  <path d="M18 28h124v12H18z" fill="#e24a4a"/>
+  <path d="M18 120h124v12H18z" fill="#f4c04e"/>
+  <text x="80" y="96" fill="#ffffff" font-family="Arial, sans-serif" font-size="58" font-weight="800" text-anchor="middle">ALG</text>
+  <text x="80" y="116" fill="#f4c04e" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="3" text-anchor="middle">DEMO</text>
+</svg>

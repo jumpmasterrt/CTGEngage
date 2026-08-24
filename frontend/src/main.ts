@@ -1,5 +1,5 @@
 import './style.css';
-import { loadExperience, type ExperienceContent } from './content';
+import { loadExperience, type ExperienceContent, type OrganizationPackageManifest } from './content';
 
 const appRoot = document.querySelector<HTMLElement>('#app');
 
@@ -9,7 +9,9 @@ const app = appRoot;
 
 type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'operator';
 type OpeningAnswer = 'yes' | 'no' | '';
-type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'failed';
+type PowerAction = 'poweroff' | 'reboot';
+type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'restarting' | 'failed';
+type EventName = 'session_started' | 'opening_answered' | 'mission_completed' | 'discovery_opened' | 'chapter_opened' | 'session_reset' | 'idle_timeout';
 
 let content: ExperienceContent;
 let screen: Screen = 'home';
@@ -21,9 +23,13 @@ let viewedSurpriseIds: string[] = [];
 let lastSurpriseId = '';
 let idleTimer = 0;
 let operatorEntryTimer = 0;
-let shutdownTimer = 0;
+let powerTimer = 0;
 let suppressOperatorClick = false;
 let powerState: PowerState = 'idle';
+let powerAction: PowerAction = 'poweroff';
+let organizationPackageId = '';
+let visitSessionId = '';
+let visitStartedAt = Date.now();
 
 const operatorEntryHoldMilliseconds = 4000;
 const shutdownHoldMilliseconds = 3000;
@@ -43,17 +49,88 @@ function productName() {
   return `${escapeHtml(first)}${rest.length ? ` <strong>${escapeHtml(rest.join(' '))}</strong>` : ''}`;
 }
 
+function applyOrganizationPackage(manifest: OrganizationPackageManifest, loadedContent: ExperienceContent) {
+  const root = document.documentElement;
+  root.lang = manifest.locale;
+  root.style.setProperty('--package-background', manifest.theme.background);
+  root.style.setProperty('--package-surface', manifest.theme.surface);
+  root.style.setProperty('--package-primary', manifest.theme.primary);
+  root.style.setProperty('--package-secondary', manifest.theme.secondary);
+  document.title = loadedContent.brand.product;
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', manifest.theme.background);
+  document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', `${manifest.name} offline visitor experience.`);
+}
+
+function renderPackageFailure() {
+  app.innerHTML = `<main class="kiosk-shell package-error-shell">
+    <section class="screen package-error-screen" aria-labelledby="package-error-title">
+      <p class="eyebrow">Package unavailable</p>
+      <h1 id="package-error-title">Engage could not start.</h1>
+      <p class="lede">Ask the event operator to restart the kiosk or verify the active organization package.</p>
+    </section>
+    <footer><span>Engage Core</span><span class="status status-error"><i></i> Package error</span></footer>
+  </main>`;
+}
+
+function createSessionId() {
+  return globalThis.crypto?.randomUUID?.() ?? `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function recordEvent(event: EventName, details: {
+  branch?: string;
+  target?: string;
+  reason?: string;
+  selections?: string[];
+} = {}) {
+  if (!visitSessionId) return;
+  const payload = {
+    packageId: organizationPackageId,
+    sessionId: visitSessionId,
+    event,
+    screen,
+    ...details,
+    elapsedMs: Math.max(0, Date.now() - visitStartedAt),
+  };
+  void fetch('/api/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => undefined);
+}
+
+function beginVisitorSession() {
+  visitSessionId = createSessionId();
+  visitStartedAt = Date.now();
+  recordEvent('session_started');
+}
+
+function clearVisitorState() {
+  screen = 'home';
+  openingAnswer = '';
+  selected = [];
+  discoveryId = '';
+  chapterId = '';
+  viewedSurpriseIds = [];
+  lastSurpriseId = '';
+}
+
+function resetVisitorSession(event: 'session_reset' | 'idle_timeout', reason: string) {
+  recordEvent(event, {
+    branch: openingAnswer || undefined,
+    target: chapterId || discoveryId || undefined,
+    reason,
+    selections: selected.length ? selected : undefined,
+  });
+  clearVisitorState();
+  beginVisitorSession();
+}
+
 function resetIdleTimer() {
   window.clearTimeout(idleTimer);
   idleTimer = window.setTimeout(() => {
     if (screen !== 'home') {
-      screen = 'home';
-      openingAnswer = '';
-      selected = [];
-      discoveryId = '';
-      chapterId = '';
-      viewedSurpriseIds = [];
-      lastSurpriseId = '';
+      resetVisitorSession('idle_timeout', 'inactivity');
       render();
     }
   }, content.idleTimeoutSeconds * 1000);
@@ -229,6 +306,7 @@ function showNextSurprise(item: ExperienceContent['discovery']['items'][number])
   viewedSurpriseIds = [...viewedSurpriseIds, nextChapter.id];
   lastSurpriseId = nextChapter.id;
   screen = 'chapter';
+  recordEvent('chapter_opened', { target: `${item.id}/${nextChapter.id}` });
 }
 
 function detailScreen() {
@@ -275,17 +353,23 @@ function detailScreen() {
 function operatorScreen() {
   const isRequesting = powerState === 'requesting';
   const isShuttingDown = powerState === 'shutting-down';
+  const isRestarting = powerState === 'restarting';
   const hasFailed = powerState === 'failed';
-  const statusTitle = isShuttingDown
-    ? 'ExpoPi is shutting down'
+  const actionLabel = powerAction === 'reboot' ? 'restart' : 'shutdown';
+  const statusTitle = isRestarting
+    ? 'ExpoPi is restarting'
+    : isShuttingDown
+      ? 'ExpoPi is shutting down'
     : isRequesting
-      ? 'Requesting a clean shutdown'
-      : 'Shut down ExpoPi safely';
-  const statusBody = isShuttingDown
-    ? 'Wait for the display to go black and the green activity light to stop blinking. Then use the inline power switch.'
+      ? `Requesting a clean ${actionLabel}`
+      : 'Restart or shut down ExpoPi safely';
+  const statusBody = isRestarting
+    ? 'The display will go black briefly. Engage will return automatically when ExpoPi finishes restarting.'
+    : isShuttingDown
+      ? 'Wait for the display to go black and the green activity light to stop blinking. Then use the inline power switch.'
     : hasFailed
-      ? 'ExpoPi did not accept the shutdown request. Return to Engage and try again, or use the proxenos administrator account.'
-      : 'Press and hold the control below for three seconds. Engage will stop services and close the filesystem before power is removed.';
+      ? `ExpoPi did not accept the ${actionLabel} request. Try again, return to Engage, or use the proxenos administrator account.`
+      : 'Restart recovers the kiosk without removing power. Shut down closes the filesystem safely before the inline power switch is used.';
 
   return `<main class="kiosk-shell operator-shell">
     <header class="brand-bar">
@@ -299,13 +383,19 @@ function operatorScreen() {
       <p class="eyebrow">Event operations</p>
       <h1 id="operator-title" tabindex="-1">${statusTitle}</h1>
       <p class="lede">${statusBody}</p>
-      ${isShuttingDown
+      ${isShuttingDown || isRestarting
         ? '<div class="shutdown-indicator" aria-hidden="true"><span></span><span></span><span></span></div>'
         : `<div class="operator-actions">
-            <button class="shutdown-control ${isRequesting ? 'is-requesting' : ''}" data-shutdown-control ${isRequesting ? 'disabled' : ''}>
-              <span class="shutdown-fill" aria-hidden="true"></span>
-              <span class="shutdown-copy"><strong>${hasFailed ? 'Hold to retry shutdown' : 'Hold to shut down'}</strong><small>Keep holding for three seconds</small></span>
-            </button>
+            <div class="power-controls">
+              <button class="shutdown-control reboot-control ${isRequesting ? 'is-requesting' : ''}" data-power-control="reboot" ${isRequesting ? 'disabled' : ''}>
+                <span class="shutdown-fill" aria-hidden="true"></span>
+                <span class="shutdown-copy"><strong>Hold to restart</strong><small>Keep holding for three seconds</small></span>
+              </button>
+              <button class="shutdown-control ${isRequesting ? 'is-requesting' : ''}" data-power-control="poweroff" ${isRequesting ? 'disabled' : ''}>
+                <span class="shutdown-fill" aria-hidden="true"></span>
+                <span class="shutdown-copy"><strong>Hold to shut down</strong><small>Keep holding for three seconds</small></span>
+              </button>
+            </div>
             <button class="secondary-button operator-return" data-action="operator-return">Return to Engage</button>
           </div>`}
     </section>
@@ -313,7 +403,8 @@ function operatorScreen() {
   </main>`;
 }
 
-async function requestPowerOff() {
+async function requestPowerAction(action: PowerAction) {
+  powerAction = action;
   powerState = 'requesting';
   render();
 
@@ -323,12 +414,12 @@ async function requestPowerOff() {
     const session = await sessionResponse.json() as { token?: unknown };
     if (typeof session.token !== 'string' || !session.token) throw new Error('Operator token unavailable.');
 
-    const powerResponse = await fetch('/api/operator/poweroff', {
+    const powerResponse = await fetch(`/api/operator/${action}`, {
       method: 'POST',
       headers: { 'X-CTG-Operator-Token': session.token },
     });
-    if (!powerResponse.ok) throw new Error('Shutdown request rejected.');
-    powerState = 'shutting-down';
+    if (!powerResponse.ok) throw new Error('Power request rejected.');
+    powerState = action === 'reboot' ? 'restarting' : 'shutting-down';
   } catch {
     powerState = 'failed';
   }
@@ -342,15 +433,15 @@ function cancelOperatorEntryHold() {
   app.querySelector<HTMLElement>('[data-operator-entry].is-holding')?.classList.remove('is-holding');
 }
 
-function cancelShutdownHold() {
-  window.clearTimeout(shutdownTimer);
-  shutdownTimer = 0;
-  app.querySelector<HTMLElement>('[data-shutdown-control].is-holding')?.classList.remove('is-holding');
+function cancelPowerHold() {
+  window.clearTimeout(powerTimer);
+  powerTimer = 0;
+  app.querySelector<HTMLElement>('[data-power-control].is-holding')?.classList.remove('is-holding');
 }
 
 function render(focusTarget: 'heading' | 'choice' = 'heading') {
   cancelOperatorEntryHold();
-  cancelShutdownHold();
+  cancelPowerHold();
   app.innerHTML = screen === 'operator'
     ? operatorScreen()
     : screen === 'home'
@@ -382,9 +473,9 @@ app.addEventListener('click', (event) => {
   const action = target.dataset.action;
 
   if (action === 'home' || action === 'restart') {
-    screen = 'home'; openingAnswer = ''; selected = []; discoveryId = ''; chapterId = ''; viewedSurpriseIds = []; lastSurpriseId = '';
+    if (screen !== 'home') resetVisitorSession('session_reset', action === 'restart' ? 'run_again' : 'start_over');
   } else if (action === 'operator-return') {
-    screen = 'home';
+    resetVisitorSession('session_reset', 'operator_return');
     powerState = 'idle';
   } else if (action === 'discover') {
     screen = 'discovery'; discoveryId = ''; chapterId = '';
@@ -394,6 +485,7 @@ app.addEventListener('click', (event) => {
     const discoveryItem = content.discovery.items.find((item) => item.id === discoveryId);
     if (discoveryItem) showNextSurprise(discoveryItem);
   } else if (target.dataset.opening === 'yes' || target.dataset.opening === 'no') {
+    recordEvent('opening_answered', { branch: target.dataset.opening });
     openingAnswer = target.dataset.opening;
     selected = [];
     screen = 'mission';
@@ -407,6 +499,7 @@ app.addEventListener('click', (event) => {
   } else if (target.dataset.discovery) {
     discoveryId = target.dataset.discovery;
     chapterId = '';
+    recordEvent('discovery_opened', { target: discoveryId });
     const discoveryItem = content.discovery.items.find((item) => item.id === discoveryId);
     if (discoveryItem?.randomizeChapters && discoveryItem.chapters?.length) {
       showNextSurprise(discoveryItem);
@@ -416,14 +509,16 @@ app.addEventListener('click', (event) => {
   } else if (target.dataset.chapter) {
     chapterId = target.dataset.chapter;
     screen = 'chapter';
+    recordEvent('chapter_opened', { target: `${discoveryId}/${chapterId}` });
   } else if (action === 'confirm' && selected.length) {
+    recordEvent('mission_completed', { branch: openingAnswer, selections: selected });
     screen = 'complete';
   }
   render();
 });
 
 app.addEventListener('pointerdown', (event) => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-operator-entry], [data-shutdown-control]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-operator-entry], [data-power-control]');
   if (!target) return;
 
   if (target.hasAttribute('data-operator-entry')) {
@@ -439,33 +534,41 @@ app.addEventListener('pointerdown', (event) => {
     }, operatorEntryHoldMilliseconds);
   }
 
-  if (target.hasAttribute('data-shutdown-control') && powerState !== 'requesting' && powerState !== 'shutting-down') {
-    cancelShutdownHold();
+  if (target.dataset.powerControl && powerState !== 'requesting' && powerState !== 'shutting-down' && powerState !== 'restarting') {
+    cancelPowerHold();
     target.classList.add('is-holding');
-    shutdownTimer = window.setTimeout(() => {
-      shutdownTimer = 0;
-      void requestPowerOff();
+    powerTimer = window.setTimeout(() => {
+      powerTimer = 0;
+      void requestPowerAction(target.dataset.powerControl as PowerAction);
     }, shutdownHoldMilliseconds);
   }
 });
 
 window.addEventListener('pointerup', () => {
   cancelOperatorEntryHold();
-  cancelShutdownHold();
+  cancelPowerHold();
 });
 window.addEventListener('pointercancel', () => {
   cancelOperatorEntryHold();
-  cancelShutdownHold();
+  cancelPowerHold();
 });
 app.addEventListener('contextmenu', (event) => {
-  if ((event.target as HTMLElement).closest('[data-operator-entry], [data-shutdown-control]')) {
+  if ((event.target as HTMLElement).closest('[data-operator-entry], [data-power-control]')) {
     event.preventDefault();
   }
 });
 window.addEventListener('pointerdown', resetIdleTimer, { passive: true });
 window.addEventListener('keydown', resetIdleTimer, { passive: true });
 
-void loadExperience().then((loadedContent) => {
-  content = loadedContent;
-  render();
-});
+void loadExperience()
+  .then((loadedPackage) => {
+    organizationPackageId = loadedPackage.manifest.id;
+    content = loadedPackage.content;
+    applyOrganizationPackage(loadedPackage.manifest, content);
+    beginVisitorSession();
+    render();
+  })
+  .catch((error: unknown) => {
+    console.error('Engage could not load the active organization package.', error);
+    renderPackageFailure();
+  });

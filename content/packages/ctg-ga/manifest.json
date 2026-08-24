@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "ctg-ga",
+  "name": "CTG Georgia",
+  "organization": "Combat Tested Gaming",
+  "locale": "en-US",
+  "experience": "experience.json",
+  "theme": {
+    "background": "#071510",
+    "surface": "#122a1f",
+    "primary": "#efb54a",
+    "secondary": "#a9c98f"
+  }
+}

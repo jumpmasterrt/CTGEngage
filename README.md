@@ -16,7 +16,7 @@ The application is designed to run on iPad, Android, Linux and Windows kiosk dev
 
 - `frontend/` — touchscreen user interface
 - `backend/` — Go service and local API
-- `content/` — editable content packs and media
+- `content/` — active-package configuration plus organization packages and media
 - `deploy/` — Linux service and kiosk configuration
 - `scripts/` — development, packaging, and deployment helpers
 - `docs/` — architecture and operator notes
@@ -24,6 +24,18 @@ The application is designed to run on iPad, Android, Linux and Windows kiosk dev
 ## Daily development
 
 Open the repository in VS Code and press **F5**. Vite starts on port `5175`, Microsoft Edge opens the kiosk, and saved frontend changes refresh automatically.
+
+F5 loads `content/active-package.json`, which selects `ctg-ga` by default.
+
+## Organization packages
+
+Engage Core contains navigation, session handling, kiosk controls, event logging, and package validation. Organization identity, theme, visitor copy, media, and calls to action live under `content/packages/<package-id>`.
+
+The production service selects a package with `CTG_ENGAGE_PACKAGE`. The same offline build contains every installed package, so changing from `ctg-ga` to the internal `alg-demo` proof does not require an application-code change or a rebuild.
+
+`alg-demo` is an internal architectural proof using public American Legion Gaming information. It is visibly labeled as a proof of concept and must not be presented as an official ALG product without their approval.
+
+See `docs/organization-packages.md` for the package contract and switching procedure.
 
 ## Build the ExpoPi package
 
@@ -49,11 +61,15 @@ sudo bash configure-expopi-kiosk.sh
 
 This disables desktop screen blanking, changes LightDM auto-login to `ctgga`, and launches Chromium from the operator's labwc autostart file using an isolated kiosk profile.
 
-## Shut down ExpoPi at an event
+## Restart or shut down ExpoPi at an event
 
 1. Press and hold the **CTG Engage** wordmark in the upper-left corner for four seconds.
-2. On the operator screen, press and hold **Hold to shut down** for three seconds.
-3. Wait for the display to go black and the green activity light to stop blinking.
-4. Turn off the inline power switch.
+2. On the operator screen, press and hold **Hold to restart** or **Hold to shut down** for three seconds.
+3. After a restart, wait for Engage to return automatically. After a shutdown, wait for the display to go black and the green activity light to stop blinking.
+4. Use the inline power switch only after a completed shutdown.
 
-The installer grants the isolated `ctg-engage` service account only the system power-off action. The operator screen uses a runtime token and is available only from the locally served kiosk.
+The installer grants the isolated `ctg-engage` service account only the system restart and power-off actions. The operator screen uses a runtime token and is available only from the locally served kiosk.
+
+## Field-test events
+
+The production kiosk records anonymous interaction events locally in `/var/lib/ctg-engage/interaction-events.jsonl`. Events contain the active package ID, a random session identifier, screen and choice IDs, elapsed time, and reset reason. They do not contain names, accounts, free text, or network identifiers. The log is capped at 5 MiB with one rotated backup and is never transmitted by Engage.
