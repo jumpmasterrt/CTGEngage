@@ -24,7 +24,9 @@ V1 is fieldable only when every required item below passes on ExpoPi.
 
 - [ ] Logos and all package assets render without a network connection.
 - [ ] Every source reference clearly shows whether online follow-through is available.
-- [ ] Source references open only when the online module is enabled and the browser has a connection.
+- [ ] Every source reference opens a supporting-source view with a clear return to the story.
+- [ ] Kiosk mode never opens an external source page or leaves Engage.
+- [ ] Full external articles are offered only in non-kiosk preview when online sources are enabled and available.
 - [ ] No text is clipped at the kiosk’s native resolution and orientation.
 - [ ] Factual claims, names, dates, and source labels have completed leadership review.
 - [ ] The browser displays no first-run prompts, update banners, crash warnings, or navigation chrome.

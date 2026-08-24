@@ -36,7 +36,7 @@ func TestHandlerServesKioskAndHealth(t *testing.T) {
 		{name: "home", path: "/", wantStatus: http.StatusOK, wantBody: "CTG Engage", wantNoStore: true},
 		{name: "content pack", path: "/experience.json", wantStatus: http.StatusOK, wantBody: `"schemaVersion":4`, wantNoStore: true},
 		{name: "health", path: "/api/health", wantStatus: http.StatusOK, wantBody: `{"status":"ok"}`, wantNoStore: true},
-		{name: "organization package", path: "/api/config", wantStatus: http.StatusOK, wantBody: `"onlineSourcesEnabled":false`, wantNoStore: true},
+		{name: "organization package", path: "/api/config", wantStatus: http.StatusOK, wantBody: `"kioskMode":true`, wantNoStore: true},
 		{name: "missing asset", path: "/missing.png", wantStatus: http.StatusNotFound, wantBody: "404 page not found"},
 	}
 
@@ -84,11 +84,12 @@ func TestHandlerServesConfiguredOrganizationPackage(t *testing.T) {
 		SchemaVersion        int    `json:"schemaVersion"`
 		ActivePackage        string `json:"activePackage"`
 		OnlineSourcesEnabled bool   `json:"onlineSourcesEnabled"`
+		KioskMode            bool   `json:"kioskMode"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &config); err != nil {
 		t.Fatalf("decode config: %v", err)
 	}
-	if config.SchemaVersion != 1 || config.ActivePackage != "alg-demo" || !config.OnlineSourcesEnabled {
+	if config.SchemaVersion != 1 || config.ActivePackage != "alg-demo" || !config.OnlineSourcesEnabled || !config.KioskMode {
 		t.Fatalf("config = %#v", config)
 	}
 }

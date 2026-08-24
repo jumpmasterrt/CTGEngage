@@ -7,7 +7,7 @@ if (!appRoot) throw new Error('CTG Engage app root was not found.');
 
 const app = appRoot;
 
-type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'operator';
+type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'source' | 'operator';
 type OpeningAnswer = 'yes' | 'no' | '';
 type PowerAction = 'poweroff' | 'reboot';
 type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'restarting' | 'failed';
@@ -29,6 +29,8 @@ let powerState: PowerState = 'idle';
 let powerAction: PowerAction = 'poweroff';
 let organizationPackageId = '';
 let onlineSourcesEnabled = false;
+let kioskMode = true;
+let sourceReturnScreen: 'detail' | 'chapter' = 'detail';
 let experienceLoaded = false;
 let visitSessionId = '';
 let visitStartedAt = Date.now();
@@ -62,17 +64,14 @@ function sourceStatus() {
 }
 
 function sourceReference(label: string, url?: string) {
-  if (url && onlineSourcesAvailable()) {
-    return `<a class="source-note source-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-source-url="${escapeHtml(url)}" aria-label="Open source: ${escapeHtml(label)}">
-      <span>Source ↗</span><span class="source-label">${escapeHtml(label)}</span>
-    </a>`;
+  if (url) {
+    return `<button type="button" class="source-note source-link" data-action="source" data-source-url="${escapeHtml(url)}" aria-label="View supporting source: ${escapeHtml(label)}">
+      <span>View source</span><span class="source-label">${escapeHtml(label)}</span>
+    </button>`;
   }
 
-  const stateLabel = url
-    ? onlineSourcesEnabled ? 'Source · Offline' : 'Source · Online only'
-    : 'Source · Internal';
-  return `<span class="source-note source-disabled" aria-label="${escapeHtml(stateLabel)}: ${escapeHtml(label)}">
-    <span>${escapeHtml(stateLabel)}</span><span class="source-label">${escapeHtml(label)}</span>
+  return `<span class="source-note source-disabled" aria-label="Internal source: ${escapeHtml(label)}">
+    <span>Source · Internal</span><span class="source-label">${escapeHtml(label)}</span>
   </span>`;
 }
 
@@ -140,6 +139,7 @@ function clearVisitorState() {
   chapterId = '';
   viewedSurpriseIds = [];
   lastSurpriseId = '';
+  sourceReturnScreen = 'detail';
 }
 
 function resetVisitorSession(event: 'session_reset' | 'idle_timeout', reason: string) {
@@ -337,12 +337,18 @@ function showNextSurprise(item: ExperienceContent['discovery']['items'][number])
   recordEvent('chapter_opened', { target: `${item.id}/${nextChapter.id}` });
 }
 
-function detailScreen() {
-  const discovery = content.discovery;
-  const item = discovery.items.find((candidate) => candidate.id === discoveryId) ?? discovery.items[0];
-  const detail = screen === 'chapter'
+function currentDiscoveryDetail(targetScreen: 'detail' | 'chapter') {
+  const item = content.discovery.items.find((candidate) => candidate.id === discoveryId) ?? content.discovery.items[0];
+  const detail = targetScreen === 'chapter'
     ? item.chapters?.find((chapter) => chapter.id === chapterId) ?? item
     : item;
+  return { item, detail };
+}
+
+function detailScreen() {
+  const discovery = content.discovery;
+  const detailReturnScreen = screen === 'chapter' ? 'chapter' : 'detail';
+  const { item, detail } = currentDiscoveryDetail(detailReturnScreen);
   const isRandomizedChapter = screen === 'chapter' && item.randomizeChapters === true;
   const primaryAction = isRandomizedChapter ? 'surprise' : screen === 'chapter' ? 'chapters' : 'discover';
   const primaryLabel = isRandomizedChapter
@@ -378,6 +384,38 @@ function detailScreen() {
           <strong>${escapeHtml(discovery.connectText)}</strong>
         </div>
       </div>
+    </div>
+  </section>`, 5);
+}
+
+function sourceScreen() {
+  const { detail } = currentDiscoveryDetail(sourceReturnScreen);
+  const sourceUrl = detail.sourceUrl;
+  const sourceHost = sourceUrl ? new URL(sourceUrl).hostname.replace(/^www\./, '') : 'Internal CTG source';
+  const canOpenExternal = Boolean(sourceUrl && onlineSourcesAvailable() && !kioskMode);
+
+  return shell(`<section class="screen source-screen" aria-labelledby="source-title">
+    <div class="source-heading">
+      <p class="eyebrow">Source</p>
+      <h1 id="source-title" tabindex="-1">Here’s where that came from.</h1>
+    </div>
+    <div class="source-reader-grid">
+      <article class="source-reader-card source-claim-card">
+        <p class="card-kicker">What it supports</p>
+        <h2>${escapeHtml(detail.factTitle)}</h2>
+        <p>${escapeHtml(detail.factBody)}</p>
+      </article>
+      <article class="source-reader-card source-citation-card">
+        <p class="card-kicker">Official reference</p>
+        <h2>${escapeHtml(detail.sourceLabel)}</h2>
+        <p class="source-host">${escapeHtml(sourceHost)}</p>
+        ${canOpenExternal
+          ? `<a class="source-external-button" href="${escapeHtml(sourceUrl ?? '')}" target="_blank" rel="noopener noreferrer">Read the full article <span aria-hidden="true">↗</span></a>`
+          : ''}
+      </article>
+    </div>
+    <div class="source-reader-actions">
+      <button class="primary-button compact" data-action="source-back"><span aria-hidden="true">←</span> Back to story</button>
     </div>
   </section>`, 5);
 }
@@ -486,6 +524,8 @@ function render(focusTarget: 'heading' | 'choice' = 'heading') {
           ? discoveryScreen()
           : screen === 'chapters'
             ? chaptersScreen()
+            : screen === 'source'
+              ? sourceScreen()
           : detailScreen();
   const focusElement = focusTarget === 'choice' && selected
     ? app.querySelector<HTMLElement>(`[data-choice="${CSS.escape(selected[selected.length - 1] ?? '')}"]`)
@@ -497,10 +537,6 @@ function render(focusTarget: 'heading' | 'choice' = 'heading') {
 app.addEventListener('click', (event) => {
   const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice], [data-opening], [data-discovery], [data-chapter], [data-source-url]');
   if (!target) return;
-  if (target.dataset.sourceUrl) {
-    recordEvent('source_opened', { target: target.dataset.sourceUrl });
-    return;
-  }
   if (suppressOperatorClick && target.hasAttribute('data-operator-entry')) {
     suppressOperatorClick = false;
     event.preventDefault();
@@ -508,7 +544,13 @@ app.addEventListener('click', (event) => {
   }
   const action = target.dataset.action;
 
-  if (action === 'home' || action === 'restart') {
+  if (action === 'source' && target.dataset.sourceUrl) {
+    sourceReturnScreen = screen === 'chapter' ? 'chapter' : 'detail';
+    recordEvent('source_opened', { target: target.dataset.sourceUrl });
+    screen = 'source';
+  } else if (action === 'source-back') {
+    screen = sourceReturnScreen;
+  } else if (action === 'home' || action === 'restart') {
     if (screen !== 'home') resetVisitorSession('session_reset', action === 'restart' ? 'run_again' : 'start_over');
   } else if (action === 'operator-return') {
     resetVisitorSession('session_reset', 'operator_return');
@@ -602,6 +644,7 @@ void loadExperience()
   .then((loadedPackage) => {
     organizationPackageId = loadedPackage.manifest.id;
     onlineSourcesEnabled = loadedPackage.onlineSourcesEnabled;
+    kioskMode = loadedPackage.kioskMode;
     content = loadedPackage.content;
     experienceLoaded = true;
     applyOrganizationPackage(loadedPackage.manifest, content);

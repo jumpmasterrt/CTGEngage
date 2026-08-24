@@ -23,7 +23,7 @@ content/
 - ExpoPi defaults to `CTG_ENGAGE_PACKAGE=ctg-ga` in the systemd unit.
 - The complete offline build includes all packages. Switching the environment setting and restarting the service changes organizations without changing or rebuilding application code.
 
-`onlineSourcesEnabled` in `content/active-package.json` controls source links during local F5 preview. The packaged service uses `CTG_ENGAGE_ONLINE_SOURCES=true` to enable them. ExpoPi explicitly defaults to `false`, so the visitor experience remains fully usable without a network connection. When the online module is disabled or the browser is offline, source labels remain visible but are not presented as tappable links.
+`onlineSourcesEnabled` in `content/active-package.json` controls full-article links during local F5 preview. The packaged service uses `CTG_ENGAGE_ONLINE_SOURCES=true` to enable network-aware source status, but ExpoPi explicitly defaults to `false`. `kioskMode` is `false` in local preview and always `true` in the packaged service. Source citations always open an internal supporting-source view; external article navigation is suppressed whenever kiosk mode is active, even if networking is later enabled.
 
 The package identifier must use lowercase letters and numbers separated by single hyphens, such as `ctg-ga` or `alg-demo`.
 

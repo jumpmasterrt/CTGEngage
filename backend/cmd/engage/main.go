@@ -91,6 +91,7 @@ func newHandler(webRoot string, dataRoot string, powerOff func() error, reboot f
 			"schemaVersion":        1,
 			"activePackage":        activePackage,
 			"onlineSourcesEnabled": onlineSourcesEnabled,
+			"kioskMode":            true,
 		})
 	})
 	mux.HandleFunc("GET /api/operator/session", func(w http.ResponseWriter, _ *http.Request) {

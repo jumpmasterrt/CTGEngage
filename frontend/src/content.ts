@@ -138,12 +138,14 @@ export interface LoadedOrganizationPackage {
   manifest: OrganizationPackageManifest;
   content: ExperienceContent;
   onlineSourcesEnabled: boolean;
+  kioskMode: boolean;
 }
 
 interface ActivePackageConfig {
   schemaVersion: 1;
   activePackage: string;
   onlineSourcesEnabled?: boolean;
+  kioskMode?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -181,7 +183,8 @@ function isActivePackageConfig(value: unknown): value is ActivePackageConfig {
   return isRecord(value)
     && value.schemaVersion === 1
     && isPackageId(value.activePackage)
-    && (value.onlineSourcesEnabled === undefined || typeof value.onlineSourcesEnabled === 'boolean');
+    && (value.onlineSourcesEnabled === undefined || typeof value.onlineSourcesEnabled === 'boolean')
+    && (value.kioskMode === undefined || typeof value.kioskMode === 'boolean');
 }
 
 function isOrganizationPackageManifest(value: unknown): value is OrganizationPackageManifest {
@@ -284,5 +287,6 @@ export async function loadExperience(): Promise<LoadedOrganizationPackage> {
       },
     },
     onlineSourcesEnabled: activeConfig.onlineSourcesEnabled === true,
+    kioskMode: activeConfig.kioskMode === true,
   };
 }
