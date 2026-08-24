@@ -236,6 +236,13 @@ async function fetchJson(path: string): Promise<unknown> {
   return response.json();
 }
 
+function publicFileUrl(relativePath: string): string {
+  const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+  return `${baseUrl}${relativePath.replace(/^\/+/, '')}`;
+}
+
 async function loadActivePackageConfig(): Promise<ActivePackageConfig> {
   let runtimeResponse: Response | undefined;
   try {
@@ -250,14 +257,14 @@ async function loadActivePackageConfig(): Promise<ActivePackageConfig> {
     return runtimeConfig;
   }
 
-  const localConfig = await fetchJson('/active-package.json');
+  const localConfig = await fetchJson(publicFileUrl('active-package.json'));
   if (!isActivePackageConfig(localConfig)) throw new Error('Active package configuration is invalid.');
   return localConfig;
 }
 
 function packageFileUrl(packageId: string, relativePath: string): string {
   const encodedPath = relativePath.split('/').map((part) => encodeURIComponent(part)).join('/');
-  return `/packages/${encodeURIComponent(packageId)}/${encodedPath}`;
+  return publicFileUrl(`packages/${encodeURIComponent(packageId)}/${encodedPath}`);
 }
 
 export async function loadExperience(): Promise<LoadedOrganizationPackage> {
