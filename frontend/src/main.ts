@@ -167,11 +167,11 @@ function homeScreen() {
       <div class="opening-choices" role="group" aria-label="${escapeHtml(home.questionAriaLabel)}">
         <button class="opening-choice" data-opening="yes">
           <span><strong>${escapeHtml(home.yesLabel)}</strong><small>${escapeHtml(home.yesDetail)}</small></span>
-          <span aria-hidden="true">→</span>
+          <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
         </button>
         <button class="opening-choice" data-opening="no">
           <span><strong>${escapeHtml(home.noLabel)}</strong><small>${escapeHtml(home.noDetail)}</small></span>
-          <span aria-hidden="true">→</span>
+          <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
         </button>
       </div>
       <p class="touch-note"><span aria-hidden="true">◎</span> ${escapeHtml(home.touchNote)}</p>
@@ -253,7 +253,7 @@ function discoveryScreen() {
     <button class="discovery-choice" data-discovery="${escapeHtml(item.id)}">
       <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
       <span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.summary)}</small></span>
-      <span aria-hidden="true">→</span>
+      <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
     </button>`).join('');
 
   return shell(`<section class="screen discovery-screen" aria-labelledby="discovery-title">
@@ -274,7 +274,7 @@ function chaptersScreen() {
     <button class="chapter-choice" data-chapter="${escapeHtml(chapter.id)}">
       <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
       <span><strong>${escapeHtml(chapter.label)}</strong><small>${escapeHtml(chapter.summary)}</small></span>
-      <span aria-hidden="true">→</span>
+      <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
     </button>`).join('');
 
   return shell(`<section class="screen chapters-screen" aria-labelledby="chapters-title">
@@ -336,14 +336,18 @@ function detailScreen() {
         <p class="card-kicker">${escapeHtml(detail.humanKicker)}</p>
         <h2>${escapeHtml(detail.humanTitle)}</h2>
         <p>${escapeHtml(detail.humanBody)}</p>
-        <small>${escapeHtml(detail.sourceLabel)}</small>
+        <small class="source-note"><span>Source</span>${escapeHtml(detail.sourceLabel)}</small>
       </article>
     </div>
     <div class="detail-actions">
       <button class="primary-button compact" data-action="${primaryAction}">${escapeHtml(primaryLabel)} <span aria-hidden="true">↺</span></button>
-      <div class="connect-card">
-        <div><span>${escapeHtml(discovery.connectKicker)}</span><strong>${escapeHtml(discovery.connectText)}</strong></div>
-        <img class="cta-qr" src="${escapeHtml(content.assets.qrCode)}" alt="${escapeHtml(discovery.qrAlt)}">
+      <div class="connect-card" aria-label="${escapeHtml(discovery.connectKicker)}. ${escapeHtml(discovery.connectText)}">
+        <div class="connect-copy">
+          <span>${escapeHtml(discovery.connectKicker)}</span>
+          <strong>${escapeHtml(discovery.connectText)}</strong>
+          <small>Point your phone camera at the code.</small>
+        </div>
+        <div class="qr-frame"><span aria-hidden="true">Scan</span><img class="cta-qr" src="${escapeHtml(content.assets.qrCode)}" alt="${escapeHtml(discovery.qrAlt)}"></div>
       </div>
       <button class="secondary-button detail-restart" data-action="restart">${escapeHtml(discovery.restartLabel)}</button>
     </div>
