@@ -67,6 +67,7 @@ func newHandler(webRoot string, dataRoot string, powerOff func() error, reboot f
 	if !validOrganizationPackageID(activePackage) {
 		return nil, fmt.Errorf("invalid organization package %q", activePackage)
 	}
+	onlineSourcesEnabled := strings.EqualFold(strings.TrimSpace(os.Getenv("CTG_ENGAGE_ONLINE_SOURCES")), "true")
 
 	operatorToken, err := newOperatorToken()
 	if err != nil {
@@ -87,8 +88,9 @@ func newHandler(webRoot string, dataRoot string, powerOff func() error, reboot f
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "no-store")
 		_ = json.NewEncoder(w).Encode(map[string]any{
-			"schemaVersion": 1,
-			"activePackage": activePackage,
+			"schemaVersion":        1,
+			"activePackage":        activePackage,
+			"onlineSourcesEnabled": onlineSourcesEnabled,
 		})
 	})
 	mux.HandleFunc("GET /api/operator/session", func(w http.ResponseWriter, _ *http.Request) {

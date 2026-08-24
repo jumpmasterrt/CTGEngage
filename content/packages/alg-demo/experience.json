@@ -120,7 +120,8 @@
         "humanKicker": "Why it matters",
         "humanTitle": "A low-pressure activity can make room for people.",
         "humanBody": "Nobody has to begin with a heavy conversation. Playing alongside someone can be enough for the first visit.",
-        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org."
+        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org.",
+        "sourceUrl": "https://algvets.org/"
       },
       {
         "id": "connection",
@@ -135,7 +136,8 @@
         "humanKicker": "Why it matters",
         "humanTitle": "The first conversation already has a subject.",
         "humanBody": "A match, race, tournament, or community event can replace an awkward introduction with something people can do together.",
-        "sourceLabel": "Internal demo content adapted from public ALG and American Legion reporting."
+        "sourceLabel": "Internal demo content adapted from public ALG and American Legion reporting.",
+        "sourceUrl": "https://algvets.org/"
       },
       {
         "id": "careers",
@@ -150,7 +152,8 @@
         "humanKicker": "Why it matters",
         "humanTitle": "A hobby can reveal an overlooked strength.",
         "humanBody": "Teamwork, systems thinking, communication, production, and technical curiosity can become starting points for a new direction.",
-        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org."
+        "sourceLabel": "Internal demo content adapted from the public ALG mission at algvets.org.",
+        "sourceUrl": "https://algvets.org/"
       }
     ]
   }

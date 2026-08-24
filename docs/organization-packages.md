@@ -23,6 +23,8 @@ content/
 - ExpoPi defaults to `CTG_ENGAGE_PACKAGE=ctg-ga` in the systemd unit.
 - The complete offline build includes all packages. Switching the environment setting and restarting the service changes organizations without changing or rebuilding application code.
 
+`onlineSourcesEnabled` in `content/active-package.json` controls source links during local F5 preview. The packaged service uses `CTG_ENGAGE_ONLINE_SOURCES=true` to enable them. ExpoPi explicitly defaults to `false`, so the visitor experience remains fully usable without a network connection. When the online module is disabled or the browser is offline, source labels remain visible but are not presented as tappable links.
+
 The package identifier must use lowercase letters and numbers separated by single hyphens, such as `ctg-ga` or `alg-demo`.
 
 ## Manifest contract
@@ -35,6 +37,8 @@ The package identifier must use lowercase letters and numbers separated by singl
 - four theme colors: background, surface, primary, and secondary.
 
 Experience and asset paths must remain relative to the package. Absolute URLs, parent-directory traversal, query strings, and network resources are rejected. This keeps a package self-contained and offline-first.
+
+Discovery items and chapters may include a credential-free HTTPS `sourceUrl`. Source URLs support optional online follow-through only; no visitor-facing claim or interaction may depend on loading one.
 
 ## Scope boundary
 

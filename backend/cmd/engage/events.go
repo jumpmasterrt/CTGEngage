@@ -24,6 +24,7 @@ var allowedEventNames = map[string]bool{
 	"mission_completed": true,
 	"discovery_opened":  true,
 	"chapter_opened":    true,
+	"source_opened":     true,
 	"session_reset":     true,
 	"idle_timeout":      true,
 }
@@ -110,10 +111,13 @@ func validateInteractionEvent(event interactionEvent) error {
 	if !allowedEventNames[event.Event] {
 		return fmt.Errorf("invalid event name")
 	}
-	for _, value := range []string{event.Screen, event.Branch, event.Target, event.Reason} {
+	for _, value := range []string{event.Screen, event.Branch, event.Reason} {
 		if !validEventValue(value, 100) {
 			return fmt.Errorf("invalid event value")
 		}
+	}
+	if !validEventValue(event.Target, 300) {
+		return fmt.Errorf("invalid event target")
 	}
 	if len(event.Selections) > 10 {
 		return fmt.Errorf("too many selections")

@@ -11,7 +11,7 @@ type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'deta
 type OpeningAnswer = 'yes' | 'no' | '';
 type PowerAction = 'poweroff' | 'reboot';
 type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'restarting' | 'failed';
-type EventName = 'session_started' | 'opening_answered' | 'mission_completed' | 'discovery_opened' | 'chapter_opened' | 'session_reset' | 'idle_timeout';
+type EventName = 'session_started' | 'opening_answered' | 'mission_completed' | 'discovery_opened' | 'chapter_opened' | 'source_opened' | 'session_reset' | 'idle_timeout';
 
 let content: ExperienceContent;
 let screen: Screen = 'home';
@@ -28,6 +28,8 @@ let suppressOperatorClick = false;
 let powerState: PowerState = 'idle';
 let powerAction: PowerAction = 'poweroff';
 let organizationPackageId = '';
+let onlineSourcesEnabled = false;
+let experienceLoaded = false;
 let visitSessionId = '';
 let visitStartedAt = Date.now();
 
@@ -47,6 +49,31 @@ function escapeHtml(value: string) {
 function productName() {
   const [first, ...rest] = content.brand.product.split(' ');
   return `${escapeHtml(first)}${rest.length ? ` <strong>${escapeHtml(rest.join(' '))}</strong>` : ''}`;
+}
+
+function onlineSourcesAvailable() {
+  return onlineSourcesEnabled && navigator.onLine;
+}
+
+function sourceStatus() {
+  if (onlineSourcesAvailable()) return { className: 'status-online', label: 'Online sources ready' };
+  if (onlineSourcesEnabled) return { className: 'status-unavailable', label: 'Offline content · sources unavailable' };
+  return { className: 'status-offline', label: 'Offline content ready' };
+}
+
+function sourceReference(label: string, url?: string) {
+  if (url && onlineSourcesAvailable()) {
+    return `<a class="source-note source-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" data-source-url="${escapeHtml(url)}" aria-label="Open source: ${escapeHtml(label)}">
+      <span>Source ↗</span><span class="source-label">${escapeHtml(label)}</span>
+    </a>`;
+  }
+
+  const stateLabel = url
+    ? onlineSourcesEnabled ? 'Source · Offline' : 'Source · Online only'
+    : 'Source · Internal';
+  return `<span class="source-note source-disabled" aria-label="${escapeHtml(stateLabel)}: ${escapeHtml(label)}">
+    <span>${escapeHtml(stateLabel)}</span><span class="source-label">${escapeHtml(label)}</span>
+  </span>`;
 }
 
 function applyOrganizationPackage(manifest: OrganizationPackageManifest, loadedContent: ExperienceContent) {
@@ -138,6 +165,7 @@ function resetIdleTimer() {
 
 function shell(body: string, step: number) {
   const totalSteps = 5;
+  const currentSourceStatus = sourceStatus();
   return `<main class="kiosk-shell">
     <header class="brand-bar">
       <button class="wordmark" data-action="home" data-operator-entry aria-label="Return to the ${escapeHtml(content.brand.product)} home screen">
@@ -153,7 +181,7 @@ function shell(body: string, step: number) {
       <span class="progress-track"><span style="width:${(step / totalSteps) * 100}%"></span></span>
     </div>
     ${body}
-    <footer><span>${escapeHtml(content.brand.organization)}</span><span class="status"><i></i> ${escapeHtml(content.brand.offlineStatus)}</span></footer>
+    <footer><span>${escapeHtml(content.brand.organization)}</span><span class="status ${currentSourceStatus.className}"><i></i> ${escapeHtml(currentSourceStatus.label)}</span></footer>
   </main>`;
 }
 
@@ -167,11 +195,11 @@ function homeScreen() {
       <div class="opening-choices" role="group" aria-label="${escapeHtml(home.questionAriaLabel)}">
         <button class="opening-choice" data-opening="yes">
           <span><strong>${escapeHtml(home.yesLabel)}</strong><small>${escapeHtml(home.yesDetail)}</small></span>
-          <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
+          <span class="tap-cue" aria-hidden="true"><b>→</b></span>
         </button>
         <button class="opening-choice" data-opening="no">
           <span><strong>${escapeHtml(home.noLabel)}</strong><small>${escapeHtml(home.noDetail)}</small></span>
-          <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
+          <span class="tap-cue" aria-hidden="true"><b>→</b></span>
         </button>
       </div>
       <p class="touch-note"><span aria-hidden="true">◎</span> ${escapeHtml(home.touchNote)}</p>
@@ -253,7 +281,7 @@ function discoveryScreen() {
     <button class="discovery-choice" data-discovery="${escapeHtml(item.id)}">
       <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
       <span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.summary)}</small></span>
-      <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
+      <span class="tap-cue" aria-hidden="true"><b>→</b></span>
     </button>`).join('');
 
   return shell(`<section class="screen discovery-screen" aria-labelledby="discovery-title">
@@ -274,7 +302,7 @@ function chaptersScreen() {
     <button class="chapter-choice" data-chapter="${escapeHtml(chapter.id)}">
       <span class="discovery-number">${String(index + 1).padStart(2, '0')}</span>
       <span><strong>${escapeHtml(chapter.label)}</strong><small>${escapeHtml(chapter.summary)}</small></span>
-      <span class="tap-cue" aria-hidden="true"><span>Tap</span><b>→</b></span>
+      <span class="tap-cue" aria-hidden="true"><b>→</b></span>
     </button>`).join('');
 
   return shell(`<section class="screen chapters-screen" aria-labelledby="chapters-title">
@@ -320,7 +348,10 @@ function detailScreen() {
   const primaryLabel = isRandomizedChapter
     ? discovery.surpriseAgainLabel
     : screen === 'chapter' ? discovery.moreInTopicLabel : discovery.exploreLabel;
-  return shell(`<section class="screen detail-screen" aria-labelledby="detail-title">
+  const detailDensity = [detail.title, detail.lead, detail.factTitle, detail.factBody, detail.humanTitle, detail.humanBody, detail.sourceLabel]
+    .reduce((total, value) => total + value.length, 0);
+  const densityClass = detailDensity >= 600 ? ' detail-dense' : '';
+  return shell(`<section class="screen detail-screen${densityClass}" aria-labelledby="detail-title">
     <div class="detail-heading">
       <p class="eyebrow">${escapeHtml(detail.kicker)}</p>
       <h1 id="detail-title" tabindex="-1">${escapeHtml(detail.title)}</h1>
@@ -336,7 +367,7 @@ function detailScreen() {
         <p class="card-kicker">${escapeHtml(detail.humanKicker)}</p>
         <h2>${escapeHtml(detail.humanTitle)}</h2>
         <p>${escapeHtml(detail.humanBody)}</p>
-        <small class="source-note"><span>Source</span>${escapeHtml(detail.sourceLabel)}</small>
+        ${sourceReference(detail.sourceLabel, detail.sourceUrl)}
       </article>
     </div>
     <div class="detail-actions">
@@ -345,11 +376,8 @@ function detailScreen() {
         <div class="connect-copy">
           <span>${escapeHtml(discovery.connectKicker)}</span>
           <strong>${escapeHtml(discovery.connectText)}</strong>
-          <small>Point your phone camera at the code.</small>
         </div>
-        <div class="qr-frame"><span aria-hidden="true">Scan</span><img class="cta-qr" src="${escapeHtml(content.assets.qrCode)}" alt="${escapeHtml(discovery.qrAlt)}"></div>
       </div>
-      <button class="secondary-button detail-restart" data-action="restart">${escapeHtml(discovery.restartLabel)}</button>
     </div>
   </section>`, 5);
 }
@@ -467,8 +495,12 @@ function render(focusTarget: 'heading' | 'choice' = 'heading') {
 }
 
 app.addEventListener('click', (event) => {
-  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice], [data-opening], [data-discovery], [data-chapter]');
+  const target = (event.target as HTMLElement).closest<HTMLElement>('[data-action], [data-choice], [data-opening], [data-discovery], [data-chapter], [data-source-url]');
   if (!target) return;
+  if (target.dataset.sourceUrl) {
+    recordEvent('source_opened', { target: target.dataset.sourceUrl });
+    return;
+  }
   if (suppressOperatorClick && target.hasAttribute('data-operator-entry')) {
     suppressOperatorClick = false;
     event.preventDefault();
@@ -563,11 +595,15 @@ app.addEventListener('contextmenu', (event) => {
 });
 window.addEventListener('pointerdown', resetIdleTimer, { passive: true });
 window.addEventListener('keydown', resetIdleTimer, { passive: true });
+window.addEventListener('online', () => { if (experienceLoaded) render(); });
+window.addEventListener('offline', () => { if (experienceLoaded) render(); });
 
 void loadExperience()
   .then((loadedPackage) => {
     organizationPackageId = loadedPackage.manifest.id;
+    onlineSourcesEnabled = loadedPackage.onlineSourcesEnabled;
     content = loadedPackage.content;
+    experienceLoaded = true;
     applyOrganizationPackage(loadedPackage.manifest, content);
     beginVisitorSession();
     render();

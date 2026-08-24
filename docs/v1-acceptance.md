@@ -22,8 +22,9 @@ V1 is fieldable only when every required item below passes on ExpoPi.
 
 ## Content and presentation
 
-- [ ] Logos and the connection QR code render without a network connection.
-- [ ] The QR code resolves to the intended CTG destination when scanned.
+- [ ] Logos and all package assets render without a network connection.
+- [ ] Every source reference clearly shows whether online follow-through is available.
+- [ ] Source references open only when the online module is enabled and the browser has a connection.
 - [ ] No text is clipped at the kiosk’s native resolution and orientation.
 - [ ] Factual claims, names, dates, and source labels have completed leadership review.
 - [ ] The browser displays no first-run prompts, update banners, crash warnings, or navigation chrome.

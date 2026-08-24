@@ -151,7 +151,7 @@
     "moreInTopicLabel": "More in this topic",
     "surpriseAgainLabel": "Surprise me again",
     "connectKicker": "Connect with CTG",
-    "connectText": "Scan to find your way in.",
+    "connectText": "Scan the QR code at the booth.",
     "qrAlt": "QR code to connect with Combat Tested Gaming",
     "restartLabel": "Start over",
     "items": [
@@ -169,6 +169,7 @@
         "humanTitle": "The game removes the awkward first step.",
         "humanBody": "A shared activity gives strangers something to do together before anyone has to explain themselves. The first conversation can begin with a match, a table, or a simple invitation to join in.",
         "sourceLabel": "Current member count confirmed August 17, 2026.",
+        "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw",
         "chapterTitle": "What kind of first connection feels easiest?",
         "chapterPrompt": "You do not need to make a big entrance. Choose the smallest first step that sounds comfortable.",
         "chapterAriaLabel": "Explore ways to find people and connect through Combat Tested Gaming",
@@ -186,7 +187,8 @@
             "humanKicker": "Why familiar helps",
             "humanTitle": "The first conversation already has a subject.",
             "humanBody": "You can begin with a game you know, a team you follow, a hobby you miss, or a question about something new. Nobody has to manufacture small talk when there is already something to do together.",
-            "sourceLabel": "Member count confirmed by CTG leadership on August 17, 2026; interest breadth reflected in VFW public reporting."
+            "sourceLabel": "Member count confirmed by CTG leadership on August 17, 2026; interest breadth reflected in VFW public reporting.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "skip-scoreboard",
@@ -201,7 +203,8 @@
             "humanKicker": "Permission to just be there",
             "humanTitle": "You can join the conversation without proving anything.",
             "humanBody": "Listening, talking, sharing a joke, watching someone else play, or becoming a familiar name can be enough. Competition is one way to connect—not the admission price.",
-            "sourceLabel": "Community-use description reported by VFW Checkpoint in November 2025."
+            "sourceLabel": "Community-use description reported by VFW Checkpoint in November 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "across-generations",
@@ -216,7 +219,8 @@
             "humanKicker": "What the shared interest does",
             "humanTitle": "The game lets age and service era arrive second.",
             "humanBody": "People can first meet as partners, opponents, teachers, learners, or fans. The rest of their story appears naturally—and differences that might have separated them can become something worth hearing about.",
-            "sourceLabel": "Age range and national participation reported by VFW Checkpoint in November 2025."
+            "sourceLabel": "Age range and national participation reported by VFW Checkpoint in November 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "beyond-discord",
@@ -231,7 +235,8 @@
             "humanKicker": "No forced destination",
             "humanTitle": "The goal is connection—not getting everyone into the same building.",
             "humanBody": "A digital community is a valid home of its own. When people want more, the relationships built there can also make an in-person gathering feel less like walking into a room of strangers.",
-            "sourceLabel": "Online-and-offline participation and the Post 2205 model reported by VFW in 2025."
+            "sourceLabel": "Online-and-offline participation and the Post 2205 model reported by VFW in 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/7/texas-vfw-post-hosts-video-game-tournament"
           }
         ]
       },
@@ -249,6 +254,7 @@
         "humanTitle": "Support does not need to begin with an appointment.",
         "humanBody": "Trust often forms before someone is ready to ask for help. Putting knowledgeable people inside a familiar community makes the next step easier to see and easier to take.",
         "sourceLabel": "Verified by VA News and VFW public reporting.",
+        "sourceUrl": "https://news.va.gov/130186/vfws-exclusive-gaming-league-for-veterans/",
         "chapterTitle": "Support can begin in more than one way.",
         "chapterPrompt": "Pick the path that feels most useful. Each one starts inside the community and points toward a practical next step.",
         "chapterAriaLabel": "Explore ways Combat Tested Gaming connects people with support",
@@ -266,7 +272,8 @@
             "humanKicker": "Why the location matters",
             "humanTitle": "Familiar surroundings can lower the first barrier.",
             "humanBody": "Someone who arrived to talk, watch, or play can see that qualified help exists before they are ready to ask. When the moment comes, the next step is already visible.",
-            "sourceLabel": "Service Officer access documented by VA News in April 2024."
+            "sourceLabel": "Service Officer access documented by VA News in April 2024.",
+            "sourceUrl": "https://news.va.gov/130186/vfws-exclusive-gaming-league-for-veterans/"
           },
           {
             "id": "va-qa",
@@ -281,7 +288,8 @@
             "humanKicker": "What changes",
             "humanTitle": "Information becomes a conversation.",
             "humanBody": "A live question can turn a vague concern into a clear next action. It also lets people learn by listening before they decide whether to speak up themselves.",
-            "sourceLabel": "Event details published by VA News in April 2024."
+            "sourceLabel": "Event details published by VA News in April 2024.",
+            "sourceUrl": "https://news.va.gov/130186/vfws-exclusive-gaming-league-for-veterans/"
           },
           {
             "id": "trust-first",
@@ -296,7 +304,8 @@
             "humanKicker": "The quiet work",
             "humanTitle": "Belonging makes the next question easier to ask.",
             "humanBody": "A game night, voice chat, or familiar name in the room can build enough trust for someone to say, ‘I could use some help with this.’ That moment may be small, but it matters.",
-            "sourceLabel": "Current program description from the VFW Combat Tested Gaming page."
+            "sourceLabel": "Current program description from the VFW Combat Tested Gaming page.",
+            "sourceUrl": "https://www.vfw.org/Gaming"
           },
           {
             "id": "connection-support",
@@ -311,7 +320,8 @@
             "humanKicker": "An important boundary",
             "humanTitle": "Community support complements professional care; it does not replace it.",
             "humanBody": "CTG is not a crisis line or a treatment program. It can still give someone relationships, encouragement, and a trusted path toward qualified help when more support is needed.",
-            "sourceLabel": "Current mission language from the VFW Combat Tested Gaming page."
+            "sourceLabel": "Current mission language from the VFW Combat Tested Gaming page.",
+            "sourceUrl": "https://www.vfw.org/Gaming"
           }
         ]
       },
@@ -329,6 +339,7 @@
         "humanTitle": "Contribution turns attendance into ownership.",
         "humanBody": "Hosting a conversation, teaching a game, telling a story, helping at an event, or welcoming one new person can give somebody a role—and give the community another reason to last.",
         "sourceLabel": "Drawn from VFW, VA, and CTG public records.",
+        "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw",
         "chapterTitle": "What would you help create?",
         "chapterPrompt": "Not every contribution happens on camera. Choose the kind of role that sounds most like you.",
         "chapterAriaLabel": "Explore ways to create and contribute in Combat Tested Gaming",
@@ -346,7 +357,8 @@
             "humanKicker": "What a host really creates",
             "humanTitle": "A microphone can become an empty chair at the table.",
             "humanBody": "A good host does more than broadcast. They invite people in, ask the next question, make room for another voice, and help a distant listener feel part of the conversation.",
-            "sourceLabel": "Podcast origin and launch details reported by VFW Checkpoint in November 2025."
+            "sourceLabel": "Podcast origin and launch details reported by VFW Checkpoint in November 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "tell-the-story",
@@ -361,7 +373,8 @@
             "humanKicker": "Why stories belong here",
             "humanTitle": "One honest story can give someone else words for their own experience.",
             "humanBody": "A veteran does not need a polished résumé or a dramatic ending to have something worth sharing. Ordinary stories can teach, warn, encourage, preserve memory, or simply tell another person they are not alone.",
-            "sourceLabel": "Podcast scope reported by VFW Checkpoint in November 2025."
+            "sourceLabel": "Podcast scope reported by VFW Checkpoint in November 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "build-the-room",
@@ -376,7 +389,8 @@
             "humanKicker": "The work people remember",
             "humanTitle": "Sometimes the most important contribution is noticing who has not spoken yet.",
             "humanBody": "Moderating, mentoring, answering a question, making an introduction, or inviting one person back can shape the culture more than any scoreboard. Welcoming is a real role.",
-            "sourceLabel": "Community-team composition from the VFW Foundation; mentoring and welcoming roles confirmed by CTG leadership."
+            "sourceLabel": "Community-team composition from the VFW Foundation; mentoring and welcoming roles confirmed by CTG leadership.",
+            "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/"
           },
           {
             "id": "host-the-gathering",
@@ -391,7 +405,8 @@
             "humanKicker": "Why organizers matter",
             "humanTitle": "The event is temporary. The invitation can last.",
             "humanBody": "A tournament, card night, watch party, coffee chat, or beginner session gives people a reason to meet. When it is welcoming and repeatable, those meetings can become relationships.",
-            "sourceLabel": "Participation examples and the Post 2205 model reported by VFW in 2025."
+            "sourceLabel": "Participation examples and the Post 2205 model reported by VFW in 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/7/texas-vfw-post-hosts-video-game-tournament"
           }
         ]
       },
@@ -409,6 +424,7 @@
         "humanTitle": "The relationships are the intervention.",
         "humanBody": "The claim is not that a particular game saved someone. It is that shared play created relationships—and those relationships gave people somewhere to turn when it mattered most.",
         "sourceLabel": "Reported by VFW Magazine in 2025.",
+        "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/this-community-has-saved-lives?p=1",
         "chapterTitle": "The unexpected side of CTG.",
         "chapterPrompt": "Each reveal comes from a shuffled deck of CTG facts and human stories.",
         "chapterAriaLabel": "Unexpected facts and stories about Combat Tested Gaming",
@@ -427,7 +443,8 @@
             "humanKicker": "What that really means",
             "humanTitle": "The relationships are the intervention.",
             "humanBody": "The claim is not that a particular game saved someone. It is that shared play created relationships—and those relationships gave people somewhere to turn when it mattered most.",
-            "sourceLabel": "Reported by VFW Magazine in 2025."
+            "sourceLabel": "Reported by VFW Magazine in 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/this-community-has-saved-lives?p=1"
           },
           {
             "id": "benefits-in-discord",
@@ -442,7 +459,8 @@
             "humanKicker": "The unexpected bridge",
             "humanTitle": "Leisure and service do not have to live in separate buildings.",
             "humanBody": "When trusted help appears inside a familiar community, someone can discover the next step before they are ready to make a formal appointment or explain everything from the beginning.",
-            "sourceLabel": "Service Officer access and the April 2024 Q&A documented by VA News."
+            "sourceLabel": "Service Officer access and the April 2024 Q&A documented by VA News.",
+            "sourceUrl": "https://news.va.gov/130186/vfws-exclusive-gaming-league-for-veterans/"
           },
           {
             "id": "old-glory-playtest",
@@ -457,7 +475,8 @@
             "humanKicker": "How the door opened",
             "humanTitle": "One member’s outreach created an opportunity for the whole community.",
             "humanBody": "The relationship began because somebody recognized a veteran-founded studio, made contact, and followed through. CTG moved from audience to participant—and veteran players gained a place closer to where the game was taking shape.",
-            "sourceLabel": "CTG testing relationship and timing confirmed by CTG leadership; studio and game details from Old Glory Studios. Earlier industry contact also included Madfinger Games / Gray Zone Warfare."
+            "sourceLabel": "CTG testing relationship and timing confirmed by CTG leadership; studio and game details from Old Glory Studios. Earlier industry contact also included Madfinger Games / Gray Zone Warfare.",
+            "sourceUrl": "https://oldglorystudios.us/"
           },
           {
             "id": "podcast-beyond-games",
@@ -472,7 +491,8 @@
             "humanKicker": "Why the microphone matters",
             "humanTitle": "A community becomes stronger when it can tell its own story.",
             "humanBody": "The podcast lets members decide which conversations deserve more room. Gaming may open the door, but veteran voices determine what happens after people walk through it.",
-            "sourceLabel": "Podcast scope reported by VFW Checkpoint in November 2025."
+            "sourceLabel": "Podcast scope reported by VFW Checkpoint in November 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "ai-coached-season",
@@ -487,7 +507,8 @@
             "humanKicker": "The bigger signal",
             "humanTitle": "Experimentation is part of the culture.",
             "humanBody": "The lasting point is not one vendor or one season. It is that a veteran program can try new tools, learn from them, and keep adapting around the people it serves.",
-            "sourceLabel": "Historical season details published by VFW in April 2025."
+            "sourceLabel": "Historical season details published by VFW in April 2025.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/4/join-vfws-exclusive-gaming-league-for-veterans"
           },
           {
             "id": "dont-fight-alone",
@@ -502,7 +523,8 @@
             "humanKicker": "Why that belongs in the story",
             "humanTitle": "One person can change the reach of a community.",
             "humanBody": "Programs grow through human bridges: an introduction, a message, a shared belief, or someone willing to say, ‘You two should know each other.’ That kind of contribution is available to more people than they realize.",
-            "sourceLabel": "Hood’s military and Arma roles verified by Bohemia’s Make Arma Not War; CTG connection confirmed by CTG leadership."
+            "sourceLabel": "Hood’s military and Arma roles verified by Bohemia’s Make Arma Not War; CTG connection confirmed by CTG leadership.",
+            "sourceUrl": "https://makearmanotwar.com/about/dont-fight-alone/dont-fight-alone"
           }
         ]
       },
@@ -520,6 +542,7 @@
         "humanTitle": "CTG is modernizing how veterans enter and participate in the VFW.",
         "humanBody": "A veteran does not have to wait until leaving service, fit into a local Post’s culture, or play a particular game to find a role here. CTG creates another front door—and more ways to belong once someone walks through it.",
         "sourceLabel": "Current participation and team details from the VFW Foundation.",
+        "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/",
         "chapterTitle": "Choose your way into a different kind of VFW.",
         "chapterPrompt": "What brought you here—or what has kept you outside? Pick the part of the story that matters to you.",
         "chapterAriaLabel": "Explore how CTG changes participation in the VFW",
@@ -537,7 +560,8 @@
             "humanKicker": "What veterans experience",
             "humanTitle": "A front door only works if people want to use it.",
             "humanBody": "CTG can be someone’s first contact with the VFW through community, benefits help, advocacy, stories, or a shared interest—without requiring a traditional introduction.",
-            "sourceLabel": "Current VFW Foundation Digital Engagement description."
+            "sourceLabel": "Current VFW Foundation Digital Engagement description.",
+            "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/"
           },
           {
             "id": "use-your-voice",
@@ -552,7 +576,8 @@
             "humanKicker": "Why it belongs here",
             "humanTitle": "Advocacy is another form of service.",
             "humanBody": "Staying informed, speaking up, and helping other veterans understand what is at stake can matter as much as joining a league or attending an event.",
-            "sourceLabel": "Legislative coverage confirmed by VFW Checkpoint; member motivation confirmed by CTG leadership."
+            "sourceLabel": "Legislative coverage confirmed by VFW Checkpoint; member motivation confirmed by CTG leadership.",
+            "sourceUrl": "https://www.vfw.org/media-and-events/latest-releases/archives/2025/11/waking-up-with-the-vfw"
           },
           {
             "id": "without-a-building",
@@ -567,7 +592,8 @@
             "humanKicker": "What this protects",
             "humanTitle": "Belonging should not require fitting someone else’s mold.",
             "humanBody": "CTG does not replace strong local Posts. It creates another valid home for younger veterans, remote members, and anyone who has encountered a culture that felt closed to them.",
-            "sourceLabel": "Daily-active and veteran-only community details from the VFW Foundation; cultural context from CTG leadership."
+            "sourceLabel": "Daily-active and veteran-only community details from the VFW Foundation; cultural context from CTG leadership.",
+            "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/"
           },
           {
             "id": "built-by-veterans",
@@ -582,7 +608,8 @@
             "humanKicker": "Why that feels different",
             "humanTitle": "Members are not an audience. They are owners.",
             "humanBody": "People can tell the difference between a program designed at them and a community built with them. Veteran leadership keeps CTG’s language, priorities, and culture grounded in lived experience.",
-            "sourceLabel": "Team composition confirmed by the VFW Foundation; origin confirmed by CTG leadership."
+            "sourceLabel": "Team composition confirmed by the VFW Foundation; origin confirmed by CTG leadership.",
+            "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/"
           },
           {
             "id": "choose-your-role",
@@ -597,7 +624,8 @@
             "humanKicker": "Permission to arrive quietly",
             "humanTitle": "Connection can begin before contribution.",
             "humanBody": "Someone can listen, watch, or simply be present until they find their place. Belonging does not need to be earned through performance, rank, a title, or a controller.",
-            "sourceLabel": "Current participation eligibility from the VFW Foundation; community roles confirmed by CTG leadership."
+            "sourceLabel": "Current participation eligibility from the VFW Foundation; community roles confirmed by CTG leadership.",
+            "sourceUrl": "https://vfwfoundation.org/programs/digital-engagement/combat-tested-gaming/"
           }
         ]
       }

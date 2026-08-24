@@ -36,7 +36,7 @@ func TestHandlerServesKioskAndHealth(t *testing.T) {
 		{name: "home", path: "/", wantStatus: http.StatusOK, wantBody: "CTG Engage", wantNoStore: true},
 		{name: "content pack", path: "/experience.json", wantStatus: http.StatusOK, wantBody: `"schemaVersion":4`, wantNoStore: true},
 		{name: "health", path: "/api/health", wantStatus: http.StatusOK, wantBody: `{"status":"ok"}`, wantNoStore: true},
-		{name: "organization package", path: "/api/config", wantStatus: http.StatusOK, wantBody: `"activePackage":"ctg-ga"`, wantNoStore: true},
+		{name: "organization package", path: "/api/config", wantStatus: http.StatusOK, wantBody: `"onlineSourcesEnabled":false`, wantNoStore: true},
 		{name: "missing asset", path: "/missing.png", wantStatus: http.StatusNotFound, wantBody: "404 page not found"},
 	}
 
@@ -67,6 +67,7 @@ func TestHandlerServesKioskAndHealth(t *testing.T) {
 
 func TestHandlerServesConfiguredOrganizationPackage(t *testing.T) {
 	t.Setenv("CTG_ENGAGE_PACKAGE", "alg-demo")
+	t.Setenv("CTG_ENGAGE_ONLINE_SOURCES", "true")
 	webRoot := t.TempDir()
 	writeTestFile(t, webRoot, "index.html", "Engage")
 
@@ -80,13 +81,14 @@ func TestHandlerServesConfiguredOrganizationPackage(t *testing.T) {
 	handler.ServeHTTP(response, request)
 
 	var config struct {
-		SchemaVersion int    `json:"schemaVersion"`
-		ActivePackage string `json:"activePackage"`
+		SchemaVersion        int    `json:"schemaVersion"`
+		ActivePackage        string `json:"activePackage"`
+		OnlineSourcesEnabled bool   `json:"onlineSourcesEnabled"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &config); err != nil {
 		t.Fatalf("decode config: %v", err)
 	}
-	if config.SchemaVersion != 1 || config.ActivePackage != "alg-demo" {
+	if config.SchemaVersion != 1 || config.ActivePackage != "alg-demo" || !config.OnlineSourcesEnabled {
 		t.Fatalf("config = %#v", config)
 	}
 }

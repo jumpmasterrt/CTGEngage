@@ -109,6 +109,7 @@ export interface ExperienceContent {
       humanTitle: string;
       humanBody: string;
       sourceLabel: string;
+      sourceUrl?: string;
       chapterTitle?: string;
       chapterPrompt?: string;
       chapterAriaLabel?: string;
@@ -127,6 +128,7 @@ export interface ExperienceContent {
         humanTitle: string;
         humanBody: string;
         sourceLabel: string;
+        sourceUrl?: string;
       }>;
     }>;
   };
@@ -135,11 +137,13 @@ export interface ExperienceContent {
 export interface LoadedOrganizationPackage {
   manifest: OrganizationPackageManifest;
   content: ExperienceContent;
+  onlineSourcesEnabled: boolean;
 }
 
 interface ActivePackageConfig {
   schemaVersion: 1;
   activePackage: string;
+  onlineSourcesEnabled?: boolean;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -163,8 +167,21 @@ function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
 }
 
+function isHttpsUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && Boolean(url.hostname) && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
 function isActivePackageConfig(value: unknown): value is ActivePackageConfig {
-  return isRecord(value) && value.schemaVersion === 1 && isPackageId(value.activePackage);
+  return isRecord(value)
+    && value.schemaVersion === 1
+    && isPackageId(value.activePackage)
+    && (value.onlineSourcesEnabled === undefined || typeof value.onlineSourcesEnabled === 'boolean');
 }
 
 function isOrganizationPackageManifest(value: unknown): value is OrganizationPackageManifest {
@@ -197,12 +214,14 @@ function isExperienceContent(value: unknown): value is ExperienceContent {
   if (!Array.isArray(discoveryItems) || discoveryItems.length < 2 || discoveryItems.length > 6) return false;
   if (!discoveryItems.every((item) => {
     if (!hasStrings(item, ['id', 'label', 'summary', 'kicker', 'title', 'lead', 'factKicker', 'factTitle', 'factBody', 'humanKicker', 'humanTitle', 'humanBody', 'sourceLabel'])) return false;
+    if (item.sourceUrl !== undefined && !isHttpsUrl(item.sourceUrl)) return false;
     if (item.randomizeChapters !== undefined && typeof item.randomizeChapters !== 'boolean') return false;
     if (item.randomizeChapters === true && item.chapters === undefined) return false;
     if (item.chapters === undefined) return true;
     if (!hasStrings(item, ['chapterTitle', 'chapterPrompt', 'chapterAriaLabel'])) return false;
     if (!Array.isArray(item.chapters) || item.chapters.length < 2 || item.chapters.length > 6) return false;
-    if (!item.chapters.every((chapter) => hasStrings(chapter, ['id', 'label', 'summary', 'kicker', 'title', 'lead', 'factKicker', 'factTitle', 'factBody', 'humanKicker', 'humanTitle', 'humanBody', 'sourceLabel']))) return false;
+    if (!item.chapters.every((chapter) => hasStrings(chapter, ['id', 'label', 'summary', 'kicker', 'title', 'lead', 'factKicker', 'factTitle', 'factBody', 'humanKicker', 'humanTitle', 'humanBody', 'sourceLabel'])
+      && (chapter.sourceUrl === undefined || isHttpsUrl(chapter.sourceUrl)))) return false;
     return new Set(item.chapters.map((chapter) => chapter.id)).size === item.chapters.length;
   })) return false;
   return new Set(discoveryItems.map((item) => item.id)).size === discoveryItems.length;
@@ -264,5 +283,6 @@ export async function loadExperience(): Promise<LoadedOrganizationPackage> {
         qrCode: packageFileUrl(manifestCandidate.id, experienceCandidate.assets.qrCode),
       },
     },
+    onlineSourcesEnabled: activeConfig.onlineSourcesEnabled === true,
   };
 }
