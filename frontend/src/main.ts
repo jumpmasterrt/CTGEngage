@@ -7,7 +7,7 @@ if (!appRoot) throw new Error('CTG Engage app root was not found.');
 
 const app = appRoot;
 
-type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'source' | 'operator';
+type Screen = 'home' | 'mission' | 'complete' | 'discovery' | 'chapters' | 'detail' | 'chapter' | 'source' | 'contact' | 'operator';
 type OpeningAnswer = 'yes' | 'no' | '';
 type PowerAction = 'poweroff' | 'reboot';
 type PowerState = 'idle' | 'requesting' | 'shutting-down' | 'restarting' | 'failed';
@@ -34,6 +34,10 @@ let sourceReturnScreen: 'detail' | 'chapter' = 'detail';
 let experienceLoaded = false;
 let visitSessionId = '';
 let visitStartedAt = Date.now();
+let contactStatus: 'idle' | 'saving' | 'saved' | 'failed' = 'idle';
+let contactMessage = '';
+let operatorContactCount: number | null = null;
+let operatorContactStatus = '';
 
 const operatorEntryHoldMilliseconds = 4000;
 const shutdownHoldMilliseconds = 3000;
@@ -275,6 +279,91 @@ function completeScreen() {
   </section>`, 3);
 }
 
+function contactScreen() {
+  const isSaving = contactStatus === 'saving';
+  const isSaved = contactStatus === 'saved';
+
+  if (isSaved) {
+    return shell(`<section class="screen contact-screen" aria-labelledby="contact-title">
+      <div class="mission-heading">
+        <p class="eyebrow">Stay connected</p>
+        <h1 id="contact-title" tabindex="-1">You're on the list.</h1>
+        <p class="lede">${escapeHtml(contactMessage || 'Thanks. A CTG volunteer can follow up with you after the event.')}</p>
+      </div>
+      <div class="mission-actions">
+        <button class="primary-button compact" data-action="discover">Keep exploring <span aria-hidden="true">→</span></button>
+        <button class="secondary-button" data-action="restart">Start over</button>
+      </div>
+    </section>`, 5);
+  }
+
+  return shell(`<section class="screen contact-screen" aria-labelledby="contact-title">
+    <div class="mission-heading">
+      <p class="eyebrow">Get involved</p>
+      <h1 id="contact-title" tabindex="-1">Want us to contact you?</h1>
+      <p>Leave us enough information to reach you. This works even when ExpoPi is offline.</p>
+    </div>
+
+    <form class="contact-form" data-contact-form autocomplete="off">
+      <label>
+        <span>Name</span>
+        <input name="name" type="text" maxlength="120" autocomplete="off" required>
+      </label>
+
+      <div class="contact-form-row">
+        <label>
+          <span>Email</span>
+          <input name="email" type="email" maxlength="200" autocomplete="off">
+        </label>
+
+        <label>
+          <span>Phone</span>
+          <input name="phone" type="tel" maxlength="60" autocomplete="off">
+        </label>
+      </div>
+
+      <label>
+        <span>ZIP code</span>
+        <input name="zip" type="text" inputmode="numeric" maxlength="10" autocomplete="off"
+          pattern="[0-9]{5}(-[0-9]{4})?" required>
+      </label>
+
+      <label>
+        <span>What are you interested in? <small>Optional</small></span>
+        <textarea name="interest" maxlength="500" rows="3"
+          placeholder="Gaming, volunteering, streaming, local CTG events..."></textarea>
+      </label>
+
+      <label class="contact-consent">
+        <input name="consent" type="checkbox" required>
+        <span>I give Combat Tested Gaming permission to contact me about getting involved.</span>
+      </label>
+
+      ${contactStatus === 'failed'
+        ? `<p class="contact-error" role="alert">${escapeHtml(contactMessage)}</p>`
+        : ''}
+
+      <div class="mission-actions">
+        <p class="selection-note">Please provide either an email address or phone number.</p>
+        <button class="primary-button compact" type="submit" ${isSaving ? 'disabled' : ''}>
+          ${isSaving ? 'Saving…' : 'Send my information'} <span aria-hidden="true">→</span>
+        </button>
+        <button class="secondary-button" type="button" data-action="discover">Not right now</button>
+      </div>
+      <div class="find-post-card">
+        <img
+          src="/packages/ctg-ga/branding/find-a-post-qr.png"
+          alt="QR code for the VFW Find a Post page"
+        >
+       <div>
+         <strong>Prefer to find a VFW Post first?</strong>
+         <span>Scan this code to open VFW's official Find a Post page when you have internet access.</span>
+       </div>
+     </div>
+    </form>
+  </section>`, 5);
+}
+
 function discoveryScreen() {
   const discovery = content.discovery;
   const choices = discovery.items.map((item, index) => `
@@ -383,6 +472,7 @@ function detailScreen() {
           <span>${escapeHtml(discovery.connectKicker)}</span>
           <strong>${escapeHtml(discovery.connectText)}</strong>
         </div>
+      <button class="primary-button compact" data-action="contact">I'd like to get involved</button>
       </div>
     </div>
   </section>`, 5);
@@ -456,6 +546,17 @@ function operatorScreen() {
       ${isShuttingDown || isRestarting
         ? '<div class="shutdown-indicator" aria-hidden="true"><span></span><span></span><span></span></div>'
         : `<div class="operator-actions">
+            <div class="operator-contact-panel">
+              <p class="card-kicker">Visitor contacts</p>
+              <h2>${operatorContactCount === null ? 'Checking stored contacts…' : `${operatorContactCount} stored`}</h2>
+              <p>${operatorContactStatus || 'Insert a USB drive before exporting visitor information.'}</p>
+              <div class="operator-contact-actions">
+                <button class="primary-button compact" data-action="contacts-export"
+                  ${operatorContactCount === 0 ? 'disabled' : ''}>Export CSV to USB</button>
+                <button class="secondary-button" data-action="contacts-clear"
+                  ${operatorContactCount === 0 ? 'disabled' : ''}>Clear stored contacts</button>
+              </div>
+           </div>
             <div class="power-controls">
               <button class="shutdown-control reboot-control ${isRequesting ? 'is-requesting' : ''}" data-power-control="reboot" ${isRequesting ? 'disabled' : ''}>
                 <span class="shutdown-fill" aria-hidden="true"></span>
@@ -471,6 +572,93 @@ function operatorScreen() {
     </section>
     <footer><span>Local operator access</span><span class="status"><i></i> ExpoPi</span></footer>
   </main>`;
+}
+
+async function getOperatorToken() {
+  const response = await fetch('/api/operator/session', { cache: 'no-store' });
+  if (!response.ok) throw new Error('Operator session unavailable.');
+
+  const session = await response.json() as { token?: unknown };
+  if (typeof session.token !== 'string' || !session.token) {
+    throw new Error('Operator token unavailable.');
+  }
+
+  return session.token;
+}
+
+async function refreshOperatorContacts() {
+  try {
+    const token = await getOperatorToken();
+    const response = await fetch('/api/operator/contacts', {
+      cache: 'no-store',
+      headers: { 'X-CTG-Operator-Token': token },
+    });
+
+    if (!response.ok) throw new Error('Contact count unavailable.');
+
+    const result = await response.json() as { count?: unknown };
+    operatorContactCount = typeof result.count === 'number' ? result.count : 0;
+  } catch {
+    operatorContactCount = null;
+    operatorContactStatus = 'Visitor contacts unavailable.';
+  }
+
+  if (screen === 'operator') render();
+}
+
+async function exportOperatorContacts() {
+  operatorContactStatus = 'Exporting contacts…';
+  render();
+
+  try {
+    const token = await getOperatorToken();
+    const response = await fetch('/api/operator/contacts/export', {
+      method: 'POST',
+      headers: { 'X-CTG-Operator-Token': token },
+    });
+
+    if (!response.ok) {
+      const message = (await response.text()).trim();
+      throw new Error(message || 'Export failed.');
+    }
+
+    const result = await response.json() as {
+      count?: unknown;
+      filename?: unknown;
+    };
+
+    const count = typeof result.count === 'number' ? result.count : 0;
+    const filename = typeof result.filename === 'string' ? result.filename : 'CSV file';
+
+    operatorContactStatus = `Exported ${count} contact${count === 1 ? '' : 's'} to ${filename}.`;
+  } catch (error: unknown) {
+    operatorContactStatus = error instanceof Error ? error.message : 'Export failed.';
+  }
+
+  render();
+}
+
+async function clearOperatorContacts() {
+  if (!window.confirm('Delete all locally stored visitor contacts? Only do this after you have verified the exported CSV.')) {
+    return;
+  }
+
+  try {
+    const token = await getOperatorToken();
+    const response = await fetch('/api/operator/contacts/clear', {
+      method: 'POST',
+      headers: { 'X-CTG-Operator-Token': token },
+    });
+
+    if (!response.ok) throw new Error('Contacts could not be cleared.');
+
+    operatorContactCount = 0;
+    operatorContactStatus = 'Locally stored visitor contacts cleared.';
+  } catch (error: unknown) {
+    operatorContactStatus = error instanceof Error ? error.message : 'Contacts could not be cleared.';
+  }
+
+  render();
 }
 
 async function requestPowerAction(action: PowerAction) {
@@ -526,7 +714,9 @@ function render(focusTarget: 'heading' | 'choice' = 'heading') {
             ? chaptersScreen()
             : screen === 'source'
               ? sourceScreen()
-          : detailScreen();
+              : screen === 'contact'
+                ? contactScreen()
+                : detailScreen();
   const focusElement = focusTarget === 'choice' && selected
     ? app.querySelector<HTMLElement>(`[data-choice="${CSS.escape(selected[selected.length - 1] ?? '')}"]`)
     : app.querySelector<HTMLElement>('h1');
@@ -552,9 +742,19 @@ app.addEventListener('click', (event) => {
     screen = sourceReturnScreen;
   } else if (action === 'home' || action === 'restart') {
     if (screen !== 'home') resetVisitorSession('session_reset', action === 'restart' ? 'run_again' : 'start_over');
+  } else if (action === 'contacts-export') {
+  void exportOperatorContacts();
+  return;
+  } else if (action === 'contacts-clear') {
+  void clearOperatorContacts();
+  return;  
   } else if (action === 'operator-return') {
     resetVisitorSession('session_reset', 'operator_return');
     powerState = 'idle';
+  } else if (action === 'contact') {
+    contactStatus = 'idle';
+    contactMessage = '';
+    screen = 'contact';
   } else if (action === 'discover') {
     screen = 'discovery'; discoveryId = ''; chapterId = '';
   } else if (action === 'chapters') {
@@ -595,6 +795,59 @@ app.addEventListener('click', (event) => {
   render();
 });
 
+app.addEventListener('submit', (event) => {
+  const form = (event.target as HTMLElement).closest<HTMLFormElement>('[data-contact-form]');
+  if (!form) return;
+
+  event.preventDefault();
+
+  const formData = new FormData(form);
+  const email = String(formData.get('email') ?? '').trim();
+  const phone = String(formData.get('phone') ?? '').trim();
+
+  if (!email && !phone) {
+    contactStatus = 'failed';
+    contactMessage = 'Please provide either an email address or phone number.';
+    render();
+    return;
+  }
+
+  const payload = {
+    name: String(formData.get('name') ?? '').trim(),
+    email,
+    phone,
+    zip: String(formData.get('zip') ?? '').trim(),
+    interest: String(formData.get('interest') ?? '').trim(),
+    consent: formData.get('consent') === 'on',
+  };
+
+  contactStatus = 'saving';
+  contactMessage = '';
+
+  void fetch('/api/contacts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const message = (await response.text()).trim();
+        throw new Error(message || 'Your information could not be saved.');
+      }
+
+      contactStatus = 'saved';
+      contactMessage = 'Thanks. Your information was saved here on ExpoPi for the CTG team.';
+      render();
+    })
+    .catch((error: unknown) => {
+      contactStatus = 'failed';
+      contactMessage = error instanceof Error
+        ? error.message
+        : 'Your information could not be saved.';
+      render();
+    });
+});
+
 app.addEventListener('pointerdown', (event) => {
   const target = (event.target as HTMLElement).closest<HTMLElement>('[data-operator-entry], [data-power-control]');
   if (!target) return;
@@ -607,7 +860,10 @@ app.addEventListener('pointerdown', (event) => {
       suppressOperatorClick = true;
       screen = 'operator';
       powerState = 'idle';
+      operatorContactCount = null;
+      operatorContactStatus = '';
       render();
+      void refreshOperatorContacts();
       window.setTimeout(() => { suppressOperatorClick = false; }, 800);
     }, operatorEntryHoldMilliseconds);
   }

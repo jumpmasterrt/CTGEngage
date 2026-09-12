@@ -78,6 +78,11 @@ func newHandler(webRoot string, dataRoot string, powerOff func() error, reboot f
 		return nil, fmt.Errorf("open event store: %w", err)
 	}
 
+	contacts, err := newContactStore(dataRoot)
+	if err != nil {
+		return nil, fmt.Errorf("open contact store: %w", err)
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -102,6 +107,74 @@ func newHandler(webRoot string, dataRoot string, powerOff func() error, reboot f
 	})
 	mux.HandleFunc("POST /api/events", events.handle)
 
+	mux.HandleFunc("POST /api/contacts", contacts.handleCreate)
+
+	requireOperator := func(w http.ResponseWriter, r *http.Request) bool {
+		providedToken := r.Header.Get(operatorTokenHeader)
+		validToken := subtle.ConstantTimeCompare([]byte(providedToken), []byte(operatorToken)) == 1
+
+		if !requestIsSameOrigin(r) || !validToken {
+			http.Error(w, "operator authorization required", http.StatusForbidden)
+			return false
+		}
+
+		return true
+	}
+
+	mux.HandleFunc("GET /api/operator/contacts", func(w http.ResponseWriter, r *http.Request) {
+		if !requireOperator(w, r) {
+			return
+		}
+
+		count, err := contacts.count()
+		if err != nil {
+			http.Error(w, "contacts unavailable", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(map[string]int{
+			"count": count,
+		})
+	})
+
+	mux.HandleFunc("POST /api/operator/contacts/export", func(w http.ResponseWriter, r *http.Request) {
+		if !requireOperator(w, r) {
+			return
+		}
+
+		path, count, err := contacts.exportCSV()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusConflict)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"status":   "exported",
+			"count":    count,
+			"filename": filepath.Base(path),
+		})
+	})
+
+	mux.HandleFunc("POST /api/operator/contacts/clear", func(w http.ResponseWriter, r *http.Request) {
+		if !requireOperator(w, r) {
+			return
+		}
+
+		if err := contacts.clear(); err != nil {
+			http.Error(w, "contacts could not be cleared", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"status": "cleared",
+		})
+	})
 	var powerActionOnce sync.Once
 	registerPowerAction := func(pattern string, status string, action func() error) {
 		mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
@@ -171,7 +244,13 @@ func newOperatorToken() (string, error) {
 }
 
 func requestIsSameOrigin(r *http.Request) bool {
-	return r.Header.Get("Origin") == "http://"+r.Host
+	origin := r.Header.Get("Origin")
+
+	if origin == "" {
+		return r.Method == http.MethodGet || r.Method == http.MethodHead
+	}
+
+	return origin == "http://"+r.Host
 }
 
 func systemPowerOff() error {
