@@ -1,38 +1,137 @@
 # CTG Engage
 
-Offline-first touchscreen experience for introducing convention visitors to Combat Tested Gaming.
+## Our Community — Deployed.
 
-The application is designed to run on iPad, Android, Linux and Windows kiosk devices.
+CTG Engage is an offline-first interactive engagement platform built for Combat Tested Gaming outreach, conventions, expos, and community events.
 
-## Stack
+It provides a touchscreen-guided visitor experience designed to introduce people to CTG, explain available opportunities, capture contact information, and create better first conversations — even when reliable internet access is unavailable.
 
-- Frontend: vanilla TypeScript, HTML, and CSS built with Vite
-- Backend: Go
-- Content: portable JSON content packs
-- Local data: SQLite
-- Linux deployment: systemd
-- Kiosk browser: Cog/WPE preferred; Chromium fallback
+The kiosk isn’t replacing the volunteer. It’s creating a better first conversation.
 
-## Workspace
+### Current Release
 
-- `frontend/` — touchscreen user interface
-- `backend/` — Go service and local API
-- `content/` — editable content packs and media
-- `deploy/` — Linux service and kiosk configuration
-- `scripts/` — development, packaging, and deployment helpers
-- `docs/` — architecture and operator notes
+CTG Engage v1.0.0 is the first production release and the software platform used by the ExpoPi reference appliance.
 
-## First development run
+The V1 ExpoPi implementation has completed end-to-end acceptance testing for:
 
-```powershell
+* Cold boot and kiosk autostart
+* Chromium kiosk mode
+* Touchscreen operation
+* On-screen keyboard
+* Offline visitor navigation
+* Local contact capture and persistence
+* Contact count and clear controls
+* USB CSV export
+* QR-based calls to action
+* Controlled reboot and shutdown
+
+See the latest release for downloadable packages and checksums.
+
+### ExpoPi
+
+ExpoPi is the reference appliance for CTG Engage.
+
+The current implementation uses a Raspberry Pi-based touchscreen kiosk configured to boot directly into CTG Engage and operate as a dedicated appliance rather than a general-purpose computer.
+
+CTG Engage itself is designed around portable web technologies so the platform can expand beyond the Raspberry Pi reference implementation over time.
+
+### Features
+
+* Offline-first visitor experience
+* Touchscreen-focused interface
+* Combat Tested Gaming content package
+* Local visitor contact storage
+* Explicit contact consent workflow
+* USB CSV export
+* QR-code calls to action
+* Operator administration controls
+* Automatic kiosk startup
+* Local content and branding
+* No continuous internet connection required
+
+### Technology
+
+Frontend
+
+* TypeScript
+* HTML
+* CSS
+* Vite
+
+Backend
+
+* Go
+* Local API
+* SQLite
+
+Content
+
+* JSON-based content packages
+* Portable branding and media assets
+
+### Reference Deployment
+
+* Linux
+* Raspberry Pi / ARM64
+* systemd
+* Chromium kiosk mode
+
+### Repository Structure
+
+backend/     Go service and local API
+content/     CTG content packages, branding, and media
+deploy/      Linux service and deployment configuration
+docs/        Development and technical documentation
+frontend/    Touchscreen user interface
+
+### Development
+
+Frontend
+
 cd frontend
 npm install
 npm run dev
-```
+
+Backend
 
 In a second terminal:
 
-```powershell
 cd backend
 go run ./cmd/engage
-```
+
+Additional development notes are available in docs/development.md.
+
+### Documentation
+
+Operator and deployment documentation is maintained in the project Wiki.
+
+Start with:
+
+* Quick Start
+* Installing CTG Engage
+* Admin Controls
+* CSV Export
+
+The Wiki is intended for kiosk operators and deployers, while the repository documentation focuses on development and architecture.
+
+### CTG Engage and Engage
+
+CTG Engage is the Combat Tested Gaming-specific implementation of the project.
+
+Future development will extract the reusable platform components into a more generic Engage platform capable of supporting organization-specific packages, branding, content, and workflows.
+
+CTG Engage will remain the original reference implementation of that platform.
+
+### Project Status
+
+Production release: v1.0.0
+
+The current production target is the ExpoPi Raspberry Pi / ARM64 appliance.
+
+Development beyond V1 will focus on improving deployment, content packaging, organizational configuration, and portability while preserving offline-first operation.
+
+### License
+
+Licensing terms for CTG Engage are being finalized.
+
+The repository includes both software and organization-specific branding/content, which may be subject to different usage terms.
