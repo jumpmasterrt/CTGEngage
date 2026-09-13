@@ -52,69 +52,73 @@ CTG Engage itself is designed around portable web technologies so the platform c
 - systemd
 - Chromium kiosk mode
 ## Repository Structure
+
 ```text
 backend/     Go service and local API
 content/     CTG content packages, branding, and media
 deploy/      Linux service and deployment configuration
 docs/        Development and technical documentation
 frontend/    Touchscreen user interface
+```
 
-Development
+## Development
 
-Frontend
+### Frontend
 
+```bash
 cd frontend
 npm install
 npm run dev
+```
 
-Backend
+### Backend
 
 In a second terminal:
 
+```bash
 cd backend
 go run ./cmd/engage
+```
 
-Additional development notes are available in docs/development.md.
+Additional development notes are available in [`docs/development.md`](docs/development.md).
 
-Documentation
+## Documentation
 
-Operator and deployment documentation is maintained in the project Wiki.
+Operator and deployment documentation is maintained in the project [Wiki](../../wiki).
 
 Start with:
 
-* Quick Start
-* Installing CTG Engage
-* Admin Controls
-* CSV Export
+- Quick Start
+- Installing CTG Engage
+- Admin Controls
+- CSV Export
 
 The Wiki is intended for kiosk operators and deployers, while repository documentation focuses on development and architecture.
 
-CTG Engage and Engage
+## CTG Engage and Engage
 
-CTG Engage is the Combat Tested Gaming-specific implementation of the project.
+CTG Engage is the **Combat Tested Gaming-specific implementation** of the project.
 
-Future development will extract the reusable platform components into a more generic Engage platform capable of supporting organization-specific packages, branding, content, and workflows.
+Future development will extract the reusable platform components into a more generic **Engage** platform capable of supporting organization-specific packages, branding, content, and workflows.
 
 CTG Engage will remain the original reference implementation of that platform.
 
-Project Status
+## Project Status
 
-Production release: v1.0.0
+**Production release:** `v1.0.0`
 
 The current production target is the ExpoPi Raspberry Pi / ARM64 appliance.
 
 Development beyond V1 will focus on improving deployment, content packaging, organizational configuration, and portability while preserving offline-first operation.
 
-License
+## License
 
-CTG Engage is currently source-available proprietary software.
+CTG Engage is currently **source-available proprietary software**.
 
 The repository may be viewed for evaluation and development transparency, but reuse, modification, redistribution, deployment, or commercial use is not permitted without authorization.
 
 Combat Tested Gaming, VFW, and other organizational branding and assets remain subject to their respective ownership and usage requirements.
 
-See LICENSE for full terms.
+See [`LICENSE`](LICENSE) for full terms.
 
 Licensing may be revised in a future release as the relationship between CTG Engage, the broader Engage platform, and organizational ownership is formally established.
-
-Save that, and I’ll verify the live render before we move to the issue templates.
