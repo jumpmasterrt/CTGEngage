@@ -132,6 +132,12 @@ Development beyond V1 will focus on improving deployment, content packaging, org
 
 ### License
 
-Licensing terms for CTG Engage are being finalized.
+CTG Engage is currently source-available proprietary software.
 
-The repository includes both software and organization-specific branding/content, which may be subject to different usage terms.
+The repository may be viewed for evaluation and development transparency, but reuse, modification, redistribution, deployment, or commercial use is not permitted without authorization.
+
+Combat Tested Gaming, VFW, and other organizational branding and assets remain subject to their respective ownership and usage requirements.
+
+See LICENSE⁠￼ for full terms.
+
+Licensing may be revised in a future release as the relationship between CTG Engage, the broader Engage platform, and organizational ownership is formally established.
