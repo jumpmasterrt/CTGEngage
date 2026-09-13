@@ -352,7 +352,7 @@ function contactScreen() {
       </div>
       <div class="find-post-card">
         <img
-          src="/packages/ctg-ga/branding/find-a-post-qr.png"
+          src="${import.meta.env.BASE_URL}packages/ctg-ga/branding/find-a-post-qr.png"
           alt="QR code for the VFW Find a Post page"
         >
        <div>
